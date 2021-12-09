@@ -16,7 +16,7 @@
 BIN := ip-masq-agent
 
 # This repo's root import path (under GOPATH).
-PKG := k8s.io/ip-masq-agent
+PKG := Azure/ip-masq-agent-v2
 
 # Where to push the docker image.
 REGISTRY ?= gcr.io/k8s-staging-networking
