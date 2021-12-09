@@ -25,9 +25,10 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/ip-masq-agent/cmd/ip-masq-agent/testing/fakefs"
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 	iptest "k8s.io/kubernetes/pkg/util/iptables/testing"
+
+	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent/testing/fakefs"
 )
 
 // turn off glog logging during tests to avoid clutter in output

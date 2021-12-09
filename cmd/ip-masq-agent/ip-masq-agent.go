@@ -28,12 +28,12 @@ import (
 
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/apiserver/pkg/util/logs"
-	"k8s.io/ip-masq-agent/cmd/ip-masq-agent/testing/fakefs"
 	utildbus "k8s.io/kubernetes/pkg/util/dbus"
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 	"k8s.io/kubernetes/pkg/version/verflag"
 	utilexec "k8s.io/utils/exec"
 
+	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent/testing/fakefs"
 	"github.com/golang/glog"
 )
 
