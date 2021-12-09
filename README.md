@@ -1,4 +1,11 @@
-# ip-masq-agent
+# ip-masq-agent-v2
+
+Based on the original [ip-masq-agent](https://github.com/kubernetes-sigs/ip-masq-agent), v2 aims to solve more specific networking cases, allow for more configuration options, and improve observability. This includes:
+* Merging configuration from multiple sources
+* Support for health checking
+* Better detection of problematic and conflicting configurations
+
+## Overview
 
 The ip-masq-agent configures `iptables` rules to `MASQUERADE` traffic outside link-local (optional, enabled by default) and additional arbitrary IP ranges.
 
@@ -69,7 +76,7 @@ See [RELEASE](RELEASE.md).
 
 ## Developing
 
-Clone the repo to `$GOPATH/src/k8s.io/ip-masq-agent`.
+Clone the repo to `$GOPATH/src/github.com/Azure/ip-masq-agent-v2`.
 
 The build tooling is based on [thockin/go-build-template](https://github.com/thockin/go-build-template).
 
