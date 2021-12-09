@@ -8,3 +8,13 @@
 *~
 \#*\#
 .\#*
+
+# Editor files
+.idea
+.vs
+
+# Test outputs
+cmd/_test_output
+*.test
+*.coverprofile
+**/junit.xml
