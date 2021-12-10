@@ -70,9 +70,6 @@ Some users will want to communicate between these ranges without masquerade - fo
 
 We are trying to eliminate networking code from the Kubelet, so rather than extend the Kubelet to accept multiple CIDRs, ip-masq-agent allows you to run a DaemonSet that configures a list of CIDRs as non-masquerade.
 
-## Releasing
-
-See [RELEASE](RELEASE.md).
 
 ## Developing
 
