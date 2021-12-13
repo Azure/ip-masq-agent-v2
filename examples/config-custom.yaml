@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ip-masq-agent-config
+  namespace: default
+  labels:
+    component: ip-masq-agent
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: EnsureExists
+data:
+  ip-masq-agent: |-
+    nonMasqueradeCIDRs:
+      - 155.128.0.0/9
+      - 10.240.0.0/16
+      - 180.132.128.0/18
+    masqLinkLocal: false
+    masqLinkLocalIPv6: true
+    resyncInterval: 60s
