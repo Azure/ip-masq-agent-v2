@@ -145,7 +145,7 @@ func (m *MasqDaemon) Run() {
 	// Periodically resync to reconfigure or heal from any rule decay
 	for {
 		func() {
-			defer time.Sleep(time.Duration(*resyncInterval))
+			defer time.Sleep(time.Duration(*resyncInterval) * time.Second)
 			// resync config
 			if err := m.osSyncConfig(); err != nil {
 				glog.Errorf("error syncing configuration: %v", err)
