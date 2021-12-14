@@ -23,7 +23,6 @@ import (
 	"os"
 	"reflect"
 	"testing"
-	"time"
 
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 	iptest "k8s.io/kubernetes/pkg/util/iptables/testing"
@@ -53,7 +52,6 @@ func NewMasqConfigNoReservedRanges() *MasqConfig {
 	return &MasqConfig{
 		NonMasqueradeCIDRs: []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"},
 		MasqLinkLocal:      false,
-		ResyncInterval:     Duration(60 * time.Second),
 	}
 }
 
@@ -73,8 +71,7 @@ func NewMasqConfigWithReservedRanges() *MasqConfig {
 			"198.51.100.0/24",
 			"203.0.113.0/24",
 			"240.0.0.0/4"},
-		MasqLinkLocal:  false,
-		ResyncInterval: Duration(60 * time.Second),
+		MasqLinkLocal: false,
 	}
 }
 
@@ -123,30 +120,26 @@ masqLinkLocal: true
 resyncInterval: 5s
 `}, nil, &MasqConfig{
 		NonMasqueradeCIDRs: []string{"172.16.0.0/12", "10.0.0.0/8"},
-		MasqLinkLocal:      true,
-		ResyncInterval:     Duration(5 * time.Second)}},
+		MasqLinkLocal:      true}},
 
 	{"valid yaml file, just nonMasqueradeCIDRs", fakefs.StringFS{File: `
 nonMasqueradeCIDRs:
   - 192.168.0.0/16
 `}, nil, &MasqConfig{
 		NonMasqueradeCIDRs: []string{"192.168.0.0/16"},
-		MasqLinkLocal:      NewMasqConfigNoReservedRanges().MasqLinkLocal,
-		ResyncInterval:     NewMasqConfigNoReservedRanges().ResyncInterval}},
+		MasqLinkLocal:      NewMasqConfigNoReservedRanges().MasqLinkLocal}},
 
 	{"valid yaml file, just masqLinkLocal", fakefs.StringFS{File: `
 masqLinkLocal: true
 `}, nil, &MasqConfig{
 		NonMasqueradeCIDRs: NewMasqConfigNoReservedRanges().NonMasqueradeCIDRs,
-		MasqLinkLocal:      true,
-		ResyncInterval:     NewMasqConfigNoReservedRanges().ResyncInterval}},
+		MasqLinkLocal:      true}},
 
 	{"valid yaml file, just resyncInterval", fakefs.StringFS{File: `
 resyncInterval: 5m
 `}, nil, &MasqConfig{
 		NonMasqueradeCIDRs: NewMasqConfigNoReservedRanges().NonMasqueradeCIDRs,
-		MasqLinkLocal:      NewMasqConfigNoReservedRanges().MasqLinkLocal,
-		ResyncInterval:     Duration(5 * time.Minute)}},
+		MasqLinkLocal:      NewMasqConfigNoReservedRanges().MasqLinkLocal}},
 
 	// invalid yaml
 	{"invalid yaml file", fakefs.StringFS{File: `*`}, fmt.Errorf("yaml: did not find expected alphabetic or numeric character"), NewMasqConfigNoReservedRanges()},
@@ -161,8 +154,7 @@ resyncInterval: 5m
 `},
 		nil, &MasqConfig{
 			NonMasqueradeCIDRs: []string{"172.16.0.0/12", "10.0.0.0/8"},
-			MasqLinkLocal:      true,
-			ResyncInterval:     Duration(5 * time.Second)}},
+			MasqLinkLocal:      true}},
 
 	{"valid json file, just nonMasqueradeCIDRs", fakefs.StringFS{File: `
 {
@@ -171,8 +163,7 @@ resyncInterval: 5m
 `},
 		nil, &MasqConfig{
 			NonMasqueradeCIDRs: []string{"192.168.0.0/16"},
-			MasqLinkLocal:      NewMasqConfigNoReservedRanges().MasqLinkLocal,
-			ResyncInterval:     NewMasqConfigNoReservedRanges().ResyncInterval}},
+			MasqLinkLocal:      NewMasqConfigNoReservedRanges().MasqLinkLocal}},
 
 	{"valid json file, just masqLinkLocal", fakefs.StringFS{File: `
 {
@@ -181,8 +172,7 @@ resyncInterval: 5m
 `},
 		nil, &MasqConfig{
 			NonMasqueradeCIDRs: NewMasqConfigNoReservedRanges().NonMasqueradeCIDRs,
-			MasqLinkLocal:      true,
-			ResyncInterval:     NewMasqConfigNoReservedRanges().ResyncInterval}},
+			MasqLinkLocal:      true}},
 
 	{"valid json file, just resyncInterval", fakefs.StringFS{File: `
 {
@@ -191,8 +181,7 @@ resyncInterval: 5m
 `},
 		nil, &MasqConfig{
 			NonMasqueradeCIDRs: NewMasqConfigNoReservedRanges().NonMasqueradeCIDRs,
-			MasqLinkLocal:      NewMasqConfigNoReservedRanges().MasqLinkLocal,
-			ResyncInterval:     Duration(5 * time.Minute)}},
+			MasqLinkLocal:      NewMasqConfigNoReservedRanges().MasqLinkLocal}},
 
 	// invalid json
 	{"invalid json file", fakefs.StringFS{File: `{*`}, fmt.Errorf("invalid character '*' looking for beginning of object key string"), NewMasqConfigNoReservedRanges()},
@@ -210,8 +199,7 @@ resyncInterval: 5m
 		`},
 		nil, &MasqConfig{
 			NonMasqueradeCIDRs: []string{"172.16.0.0/12", "10.0.0.0/8", "fc00::/7"},
-			MasqLinkLocal:      true,
-			ResyncInterval:     Duration(5 * time.Second)}},
+			MasqLinkLocal:      true}},
 }
 
 // tests MasqDaemon.syncConfig
