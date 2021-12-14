@@ -51,6 +51,7 @@ var (
 	masqChainFlag                     = flag.String("masq-chain", "IP-MASQ-AGENT", `Name of nat chain for iptables masquerade rules.`)
 	noMasqueradeAllReservedRangesFlag = flag.Bool("nomasq-all-reserved-ranges", false, "Whether to disable masquerade for all IPv4 ranges reserved by RFCs.")
 	enableIPv6                        = flag.Bool("enable-ipv6", false, "Whether to enable IPv6.")
+	resyncInterval                    = flag.Int("resync-interval", 60, "How often to refresh the config (in seconds)")
 )
 
 // MasqConfig object
@@ -58,7 +59,6 @@ type MasqConfig struct {
 	NonMasqueradeCIDRs []string `json:"nonMasqueradeCIDRs"`
 	MasqLinkLocal      bool     `json:"masqLinkLocal"`
 	MasqLinkLocalIPv6  bool     `json:"masqLinkLocalIPv6"`
-	ResyncInterval     Duration `json:"resyncInterval"`
 }
 
 // Duration - Go's JSON unmarshaler can't handle time.ParseDuration syntax when unmarshaling into time.Duration, so we do it here
@@ -100,7 +100,6 @@ func NewMasqConfig(masqAllReservedRanges bool) *MasqConfig {
 		NonMasqueradeCIDRs: nonMasq,
 		MasqLinkLocal:      false,
 		MasqLinkLocalIPv6:  false,
-		ResyncInterval:     Duration(60 * time.Second),
 	}
 }
 
@@ -146,7 +145,7 @@ func (m *MasqDaemon) Run() {
 	// Periodically resync to reconfigure or heal from any rule decay
 	for {
 		func() {
-			defer time.Sleep(time.Duration(m.config.ResyncInterval))
+			defer time.Sleep(time.Duration(*resyncInterval))
 			// resync config
 			if err := m.osSyncConfig(); err != nil {
 				glog.Errorf("error syncing configuration: %v", err)
@@ -191,7 +190,6 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 		m.config.NonMasqueradeCIDRs = c.NonMasqueradeCIDRs
 		m.config.MasqLinkLocal = c.MasqLinkLocal
 		m.config.MasqLinkLocalIPv6 = c.MasqLinkLocalIPv6
-		m.config.ResyncInterval = c.ResyncInterval
 		glog.V(2).Infof("no config file found at %q, using default values", configPath)
 		return nil
 	}
