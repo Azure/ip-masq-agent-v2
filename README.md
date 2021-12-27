@@ -36,7 +36,6 @@ The agent configuration file should be written in yaml or json syntax, and may c
 - `nonMasqueradeCIDRs []string`: A list strings in CIDR notation that specify the non-masquerade ranges.
 - `masqLinkLocal bool`: Whether to masquerade traffic to `169.254.0.0/16`. False by default.
 - `masqLinkLocalIPv6 bool`: Whether to masquerade traffic to `fe80::/10`. False by default.
-- `resyncInterval string`: The interval at which the agent attempts to reload config from disk. The syntax is any format accepted by Go's [time.ParseDuration](https://golang.org/pkg/time/#ParseDuration) function.
 
 The agent will look for a config file in its container at `/etc/config/ip-masq-agent`. This file can be provided via a `ConfigMap`, plumbed into the container via a `ConfigMapVolumeSource`. As a result, the agent can be reconfigured in a live cluster by creating or editing this `ConfigMap`.
 
@@ -71,7 +70,11 @@ Some users will want to communicate between these ranges without masquerade - fo
 We are trying to eliminate networking code from the Kubelet, so rather than extend the Kubelet to accept multiple CIDRs, ip-masq-agent allows you to run a DaemonSet that configures a list of CIDRs as non-masquerade.
 
 
-## Developing
+## Contributing
+
+This project welcomes contributions and suggestions.
+
+### Developing
 
 Clone the repo to `$GOPATH/src/github.com/Azure/ip-masq-agent-v2`.
 
@@ -93,3 +96,23 @@ Run `make push` to push the container image to `REGISTRY`.  Run `make all-push`
 to push the container images for all architectures.
 
 Run `make clean` to clean up.
+
+### Contribution requirements
+
+Most contributions require you to agree to a
+Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
+the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+
+When you submit a pull request, a CLA bot will automatically determine whether you need to provide
+a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
+provided by the bot. You will only need to do this once across all repos using our CLA.
+
+### Code of Conduct
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
+contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+### Trademarks
+
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow Microsoft’s Trademark & Brand Guidelines. Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
