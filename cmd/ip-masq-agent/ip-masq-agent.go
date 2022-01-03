@@ -22,7 +22,6 @@ import (
 	"flag"
 	"fmt"
 	"net"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -197,7 +196,7 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 		}
 	}()
 
-	files, err := os.ReadDir(configPath)
+	files, err := fs.ReadDir(configPath)
 	if err != nil {
 		return fmt.Errorf("failed to read config directory, error: %w", err)
 	}
@@ -205,20 +204,20 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 	var configAdded bool
 	for _, file := range files {
 		if strings.HasPrefix(file.Name(), configFilePrefix) {
-			glog.V(2).Infof("found config file %s at %q", file.Name(), configPath)
+			glog.V(2).Infof("syncing config file %q at %q", file.Name(), configPath)
 			yaml, err := fs.ReadFile(filepath.Join(configPath, file.Name()))
 			if err != nil {
-				return fmt.Errorf("failed to read config file %s, error: %w", file.Name(), err)
+				return fmt.Errorf("failed to read config file %q, error: %w", file.Name(), err)
 			}
 
 			json, err := utilyaml.ToJSON(yaml)
 			if err != nil {
-				return fmt.Errorf("failed to convert config file %s to JSON, error: %w", file.Name(), err)
+				return fmt.Errorf("failed to convert config file %q to JSON, error: %w", file.Name(), err)
 			}
 
 			var newConfig MasqConfig
 			if err = utiljson.Unmarshal(json, &newConfig); err != nil {
-				return fmt.Errorf("failed to unmarshal config file %s, error: %w", file.Name(), err)
+				return fmt.Errorf("failed to unmarshal config file %q, error: %w", file.Name(), err)
 			}
 
 			c.merge(&newConfig)
