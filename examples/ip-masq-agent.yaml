@@ -20,8 +20,10 @@ spec:
       hostNetwork: true
       containers:
       - name: ip-masq-agent
-        image: docker.io/mattstam/ip-masq-agent:v1.0.0__linux_amd64
+        image: docker.io/mattstam/ip-masq-agent:v2.6.1-11-gabd856e-dirty__linux_amd64
         imagePullPolicy: Always
+        args:
+          - --v=2
         securityContext:
           privileged: false
           capabilities:

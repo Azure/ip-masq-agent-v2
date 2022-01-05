@@ -14,5 +14,3 @@ data:
       - 2.2.0.0/16
       - 3.3.3.0/24
     masqLinkLocal: true
-    masqLinkLocalIPv6: false
-    resyncInterval: 45s

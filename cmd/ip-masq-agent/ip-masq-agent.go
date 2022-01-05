@@ -33,8 +33,9 @@ import (
 	"k8s.io/kubernetes/pkg/version/verflag"
 	utilexec "k8s.io/utils/exec"
 
-	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent/testing/fakefs"
 	"github.com/golang/glog"
+
+	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent/testing/fakefs"
 )
 
 const (
@@ -92,11 +93,11 @@ func EmptyMasqConfig() *MasqConfig {
 }
 
 // DefaultMasqConfig returns a MasqConfig with default values, intended to be used when no config is found
-func DefaultMasqConfig(masqAllReservedRanges bool) *MasqConfig {
+func DefaultMasqConfig() *MasqConfig {
 	// RFC 1918 defines the private ip address space as 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
 	nonMasq := []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"}
 
-	if masqAllReservedRanges {
+	if *noMasqueradeAllReservedRangesFlag {
 		nonMasq = append(nonMasq,
 			"100.64.0.0/10",   // RFC 6598
 			"192.0.0.0/24",    // RFC 6890
@@ -141,7 +142,7 @@ func main() {
 	flag.Parse()
 	masqChain = utiliptables.Chain(*masqChainFlag)
 
-	c := DefaultMasqConfig(*noMasqueradeAllReservedRangesFlag)
+	c := DefaultMasqConfig()
 
 	logs.InitLogs()
 	defer logs.FlushLogs()
@@ -228,7 +229,7 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 
 	if !configAdded {
 		// no valid config files found, use defaults
-		c = DefaultMasqConfig(*noMasqueradeAllReservedRangesFlag)
+		c = DefaultMasqConfig()
 		glog.V(2).Infof("no valid config files found at %q, using default values", configPath)
 	}
 

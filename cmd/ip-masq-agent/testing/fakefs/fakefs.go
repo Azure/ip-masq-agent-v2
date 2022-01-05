@@ -19,6 +19,7 @@ package fakefs
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -67,7 +68,7 @@ func (fs StringFS) Stat(name string) (os.FileInfo, error) {
 }
 func (fs StringFS) ReadFile(name string) ([]byte, error) {
 	for _, file := range fs.Files {
-		if strings.EqualFold("/etc/config/"+file.Name, name) {
+		if strings.EqualFold(filepath.Join("/etc/config/", file.Name), name) {
 			return []byte(file.Content), nil
 		}
 	}

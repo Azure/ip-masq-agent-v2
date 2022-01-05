@@ -15,4 +15,3 @@ data:
       - 180.132.128.0/18
     masqLinkLocal: false
     masqLinkLocalIPv6: true
-    resyncInterval: 60s
