@@ -35,7 +35,7 @@ import (
 
 	"github.com/golang/glog"
 
-	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent/testing/fakefs"
+	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent-v2/testing/fakefs"
 )
 
 const (

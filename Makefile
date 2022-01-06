@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # The binaries to build (just the basename)
-BINS := ip-masq-agent
+BINS := ip-masq-agent-v2
 
 # The platforms we support.
 ALL_PLATFORMS := linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/s390x windows/amd64
