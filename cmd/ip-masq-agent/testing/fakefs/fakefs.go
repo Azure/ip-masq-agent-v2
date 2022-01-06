@@ -45,6 +45,7 @@ func (DefaultFS) ReadDir(name string) ([]os.DirEntry, error) {
 
 type File struct {
 	Name    string
+	Path    string
 	Content string
 }
 
@@ -68,7 +69,7 @@ func (fs StringFS) Stat(name string) (os.FileInfo, error) {
 }
 func (fs StringFS) ReadFile(name string) ([]byte, error) {
 	for _, file := range fs.Files {
-		if strings.EqualFold(filepath.Join("/etc/config/", file.Name), name) {
+		if strings.EqualFold(filepath.Join(file.Path, file.Name), name) {
 			return []byte(file.Content), nil
 		}
 	}

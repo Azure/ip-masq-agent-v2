@@ -21,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
@@ -110,10 +111,12 @@ var syncConfigTests = []struct {
 	err  error             // expected error from MasqDaemon.syncConfig(fs)
 	cfg  *MasqConfig       // expected values of the configuration after loading from fs
 }{
-	// valid yaml
-	{"valid yaml file, full keys",
+	// happy paths
+
+	{"single valid yaml file, full keys",
 		fakefs.StringFS{Files: []fakefs.File{{
 			Name: configFilePrefix + "-config-0",
+			Path: configPath,
 			Content: `
 nonMasqueradeCIDRs:
   - 172.16.0.0/12
@@ -125,8 +128,9 @@ masqLinkLocalIPv6: true
 			MasqLinkLocal:      true,
 			MasqLinkLocalIPv6:  true}},
 
-	{"valid yaml file, just nonMasqueradeCIDRs", fakefs.StringFS{Files: []fakefs.File{{
+	{"single valid yaml file, just nonMasqueradeCIDRs", fakefs.StringFS{Files: []fakefs.File{{
 		Name: configFilePrefix + "-config-0",
+		Path: configPath,
 		Content: `
 nonMasqueradeCIDRs:
   - 192.168.0.0/16
@@ -134,22 +138,18 @@ nonMasqueradeCIDRs:
 		NonMasqueradeCIDRs: []string{"192.168.0.0/16"},
 		MasqLinkLocal:      NewMasqConfigNoReservedRanges().MasqLinkLocal}},
 
-	{"valid yaml file, just masqLinkLocal", fakefs.StringFS{Files: []fakefs.File{{
+	{"single valid yaml file, just masqLinkLocal", fakefs.StringFS{Files: []fakefs.File{{
 		Name: configFilePrefix + "-config-0",
+		Path: configPath,
 		Content: `
 masqLinkLocal: true
 `}}}, nil, &MasqConfig{
 		NonMasqueradeCIDRs: []string{},
 		MasqLinkLocal:      true}},
 
-	// invalid yaml
-	{"invalid yaml file", fakefs.StringFS{Files: []fakefs.File{{
-		Name:    configFilePrefix + "-config-0",
-		Content: `*`}}}, fmt.Errorf("failed to convert config file \"ip-masq-config-0\" to JSON, error: yaml: did not find expected alphabetic or numeric character"), NewMasqConfigNoReservedRanges()},
-
-	// valid json
-	{"valid json file, partial keys", fakefs.StringFS{Files: []fakefs.File{{
+	{"single valid json file, partial keys", fakefs.StringFS{Files: []fakefs.File{{
 		Name: configFilePrefix + "-config-0",
+		Path: configPath,
 		Content: `
 		{
 		  "nonMasqueradeCIDRs": ["172.16.0.0/12", "10.0.0.0/8"],
@@ -159,8 +159,9 @@ masqLinkLocal: true
 		NonMasqueradeCIDRs: []string{"172.16.0.0/12", "10.0.0.0/8"},
 		MasqLinkLocal:      true}},
 
-	{"valid json file, just nonMasqueradeCIDRs", fakefs.StringFS{Files: []fakefs.File{{
+	{"single valid json file, just nonMasqueradeCIDRs", fakefs.StringFS{Files: []fakefs.File{{
 		Name: configFilePrefix + "-config-0",
+		Path: configPath,
 		Content: `
 		{
 			"nonMasqueradeCIDRs": ["192.168.0.0/16"]
@@ -169,8 +170,9 @@ masqLinkLocal: true
 		NonMasqueradeCIDRs: []string{"192.168.0.0/16"},
 		MasqLinkLocal:      NewMasqConfigNoReservedRanges().MasqLinkLocal}},
 
-	{"valid json file, just masqLinkLocal", fakefs.StringFS{Files: []fakefs.File{{
+	{"single valid json file, just masqLinkLocal", fakefs.StringFS{Files: []fakefs.File{{
 		Name: configFilePrefix + "-config-0",
+		Path: configPath,
 		Content: `
 		{
 			"masqLinkLocal": true
@@ -179,17 +181,9 @@ masqLinkLocal: true
 		NonMasqueradeCIDRs: []string{},
 		MasqLinkLocal:      true}},
 
-	// invalid json
-	{"invalid json file", fakefs.StringFS{Files: []fakefs.File{{
-		Name:    configFilePrefix + "-config-0",
-		Content: `{*`}}}, fmt.Errorf("failed to unmarshal config file \"ip-masq-config-0\", error: invalid character '*' looking for beginning of object key string"), NewMasqConfigNoReservedRanges()},
-
-	// file does not exist
-	{"no config file", fakefs.NotExistFS{}, fmt.Errorf("failed to read config directory, error: open /etc/config/: errno 2"), NewMasqConfigNoReservedRanges()}, // If the file does not exist, defaults should be used
-
-	// valid json with ipv6 non masquerade cidr
-	{"valid json file, all keys with ipv6 cidr", fakefs.StringFS{Files: []fakefs.File{{
+	{"single valid json file, all keys with ipv6 cidr", fakefs.StringFS{Files: []fakefs.File{{
 		Name: configFilePrefix + "-config-0",
+		Path: configPath,
 		Content: `
 		{
 		  "nonMasqueradeCIDRs": ["172.16.0.0/12", "10.0.0.0/8", "fc00::/7"],
@@ -201,20 +195,9 @@ masqLinkLocal: true
 		MasqLinkLocal:      true,
 		MasqLinkLocalIPv6:  true}},
 
-	{"no correctly prefixed file", fakefs.StringFS{Files: []fakefs.File{{
-		Name: "bad-prefix-config-0",
-		Content: `
-		{
-		  "nonMasqueradeCIDRs": ["225.255.240.0/20"],
-		  "masqLinkLocal": false,
-		  "masqLinkLocalIPv6": false
-		}
-		`},
-	}}, nil, NewMasqConfigNoReservedRanges()},
-
-	// multiple config merging
 	{"multiple valid json files, full keys, ipv6 cidr", fakefs.StringFS{Files: []fakefs.File{{
 		Name: configFilePrefix + "-config-0",
+		Path: configPath,
 		Content: `
 		{
 		  "nonMasqueradeCIDRs": ["172.16.0.0/12", "10.0.0.0/8", "fc00::/7"],
@@ -223,6 +206,7 @@ masqLinkLocal: true
 		}
 		`}, {
 		Name: configFilePrefix + "config-1",
+		Path: configPath,
 		Content: `
 		{
 		  "nonMasqueradeCIDRs": ["1.0.0.0/8", "2.2.0.0/16"],
@@ -235,8 +219,9 @@ masqLinkLocal: true
 		MasqLinkLocal:      true,
 		MasqLinkLocalIPv6:  false}},
 
-	{"multiple valid json files, but one not prefixed correctly", fakefs.StringFS{Files: []fakefs.File{{
+	{"multiple valid json files, but one not correctly prefixed", fakefs.StringFS{Files: []fakefs.File{{
 		Name: configFilePrefix + "-config-0",
+		Path: configPath,
 		Content: `
 		{
 		  "nonMasqueradeCIDRs": ["111.254.0.0/15", "8.0.0.0/8"],
@@ -245,6 +230,7 @@ masqLinkLocal: true
 		}
 		`}, {
 		Name: "bad-prefix-config-1",
+		Path: configPath,
 		Content: `
 		{
 		  "nonMasqueradeCIDRs": ["4.4.0.0/8", "6.7.0.0/16"],
@@ -259,6 +245,7 @@ masqLinkLocal: true
 
 	{"multiple valid yaml files, partial keys, duplicate cidr", fakefs.StringFS{Files: []fakefs.File{{
 		Name: configFilePrefix + "-config-0",
+		Path: configPath,
 		Content: `
 nonMasqueradeCIDRs:
   - 155.128.0.0/9
@@ -266,10 +253,12 @@ nonMasqueradeCIDRs:
 masqLinkLocal: false
 `}, {
 		Name: configFilePrefix + "config-1",
+		Path: configPath,
 		Content: `
 masqLinkLocalIPv6: true
 `}, {
 		Name: configFilePrefix + "config-2",
+		Path: configPath,
 		Content: `
 nonMasqueradeCIDRs:
   - 10.240.0.0/16
@@ -280,6 +269,44 @@ nonMasqueradeCIDRs:
 		NonMasqueradeCIDRs: []string{"155.128.0.0/9", "10.0.0.0/8", "10.240.0.0/16", "180.132.128.0/18"},
 		MasqLinkLocal:      false,
 		MasqLinkLocalIPv6:  true}},
+
+	// sad paths
+
+	{"no config file", fakefs.NotExistFS{}, fmt.Errorf("failed to read config directory, error: open /etc/config/: errno 2"), NewMasqConfigNoReservedRanges()}, // If the file does not exist, defaults should be used
+
+	{"invalid json file", fakefs.StringFS{Files: []fakefs.File{{
+		Name:    configFilePrefix + "-config-0",
+		Path:    configPath,
+		Content: `{*`}}}, fmt.Errorf("failed to unmarshal config file \"ip-masq-config-0\", error: invalid character '*' looking for beginning of object key string"), NewMasqConfigNoReservedRanges()},
+
+	{"invalid yaml file", fakefs.StringFS{Files: []fakefs.File{{
+		Name:    configFilePrefix + "-config-0",
+		Path:    configPath,
+		Content: `*`}}}, fmt.Errorf("failed to convert config file \"ip-masq-config-0\" to JSON, error: yaml: did not find expected alphabetic or numeric character"), NewMasqConfigNoReservedRanges()},
+
+	{"no correctly prefixed file", fakefs.StringFS{Files: []fakefs.File{{
+		Name: "bad-prefix-config-0",
+		Path: configPath,
+		Content: `
+		{
+		  "nonMasqueradeCIDRs": ["225.255.240.0/20"],
+		  "masqLinkLocal": false,
+		  "masqLinkLocalIPv6": false
+		}
+		`},
+	}}, nil, NewMasqConfigNoReservedRanges()},
+
+	{"no file in correct directory", fakefs.StringFS{Files: []fakefs.File{{
+		Name: configFilePrefix + "-config-0",
+		Path: "",
+		Content: `
+		{
+		  "nonMasqueradeCIDRs": ["225.128.0.0/9"],
+		  "masqLinkLocal": false,
+		  "masqLinkLocalIPv6": false
+		}
+		`},
+	}}, fmt.Errorf("failed to read config file \"ip-masq-config-0\", error: open " + filepath.Join(configPath, configFilePrefix+"-config-0") + ": errno 2"), NewMasqConfigNoReservedRanges()},
 }
 
 // tests MasqDaemon.syncConfig
