@@ -18,14 +18,16 @@ package fakefs
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
 type FileSystem interface {
 	Stat(name string) (os.FileInfo, error)
 	ReadFile(name string) ([]byte, error)
+	ReadDir(name string) ([]os.DirEntry, error)
 }
 
 // DefaultFS implements FileSystem using the local disk
@@ -35,22 +37,60 @@ func (DefaultFS) Stat(name string) (os.FileInfo, error) {
 	return os.Stat(name)
 }
 func (DefaultFS) ReadFile(name string) ([]byte, error) {
-	return ioutil.ReadFile(name)
+	return os.ReadFile(name)
+}
+func (DefaultFS) ReadDir(name string) ([]os.DirEntry, error) {
+	return os.ReadDir(name)
 }
 
-// StringFS returns the string as the contents of the file
+type File struct {
+	Name    string
+	Path    string
+	Content string
+}
+
+// StringFS holds a slice of files
 type StringFS struct {
-	File string
+	Files []File
 }
 
 func (fs StringFS) Stat(name string) (os.FileInfo, error) {
 	f := NewFileInfo()
-	f.name = name
-	f.size = int64(len([]byte(fs.File)))
+
+	for _, file := range fs.Files {
+		if strings.EqualFold(file.Name, name) {
+			f.name = name
+			f.size = int64(len([]byte(file.Content)))
+			break
+		}
+	}
+
 	return f, nil
 }
 func (fs StringFS) ReadFile(name string) ([]byte, error) {
-	return []byte(fs.File), nil
+	for _, file := range fs.Files {
+		if strings.EqualFold(filepath.Join(file.Path, file.Name), name) {
+			return []byte(file.Content), nil
+		}
+	}
+
+	return nil, &os.PathError{
+		Op:   "open",
+		Path: name,
+		Err:  errors.New("errno 2"), // errno 2 is ENOENT, since the file shouldn't exist
+	}
+}
+func (fs StringFS) ReadDir(name string) ([]os.DirEntry, error) {
+	var entries []os.DirEntry
+
+	for _, file := range fs.Files {
+		f := NewFileInfo()
+		f.name = file.Name
+		f.size = int64(len([]byte(file.Content)))
+		entries = append(entries, f)
+	}
+
+	return entries, nil
 }
 
 // NotExistFS will always return os.ErrNotExist type errors from calls to Stat
@@ -67,8 +107,16 @@ func (NotExistFS) ReadFile(name string) ([]byte, error) {
 			Err:  errors.New("errno 2"), // errno 2 is ENOENT, since the file shouldn't exist
 		}
 }
+func (NotExistFS) ReadDir(name string) ([]os.DirEntry, error) {
+	return []os.DirEntry{},
+		&os.PathError{
+			Op:   "open",
+			Path: name,
+			Err:  errors.New("errno 2"), // errno 2 is ENOENT, since the dir shouldn't exist
+		}
+}
 
-// FileInfo implements the os.FileInfo interface
+// FileInfo implements the os.FileInfo and os.DirEntry interface
 type FileInfo struct {
 	name    string
 	size    int64
@@ -78,12 +126,14 @@ type FileInfo struct {
 	sys     interface{}
 }
 
-func (f *FileInfo) Name() string       { return f.name }
-func (f *FileInfo) Size() int64        { return f.size }
-func (f *FileInfo) Mode() os.FileMode  { return f.mode }
-func (f *FileInfo) ModTime() time.Time { return f.modTime }
-func (f *FileInfo) IsDir() bool        { return f.isDir }
-func (f *FileInfo) Sys() interface{}   { return f.sys }
+func (f *FileInfo) Name() string               { return f.name }
+func (f *FileInfo) Size() int64                { return f.size }
+func (f *FileInfo) Mode() os.FileMode          { return f.mode }
+func (f *FileInfo) ModTime() time.Time         { return f.modTime }
+func (f *FileInfo) IsDir() bool                { return f.isDir }
+func (f *FileInfo) Sys() interface{}           { return f.sys }
+func (f *FileInfo) Type() os.FileMode          { return f.mode }
+func (f *FileInfo) Info() (os.FileInfo, error) { return f, nil }
 
 func NewFileInfo() *FileInfo {
 	return &FileInfo{

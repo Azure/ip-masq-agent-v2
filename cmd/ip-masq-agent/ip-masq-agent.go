@@ -22,7 +22,7 @@ import (
 	"flag"
 	"fmt"
 	"net"
-	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -33,16 +33,20 @@ import (
 	"k8s.io/kubernetes/pkg/version/verflag"
 	utilexec "k8s.io/utils/exec"
 
-	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent/testing/fakefs"
 	"github.com/golang/glog"
+
+	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent/testing/fakefs"
 )
 
 const (
 	linkLocalCIDR = "169.254.0.0/16"
 	// RFC 4291
 	linkLocalCIDRIPv6 = "fe80::/10"
-	// path to a yaml or json file
-	configPath = "/etc/config/ip-masq-agent"
+	// TODO change the below to configurable flags
+	// path to a yaml or json files
+	configPath = "/etc/config/"
+	// config files in this path must start with this to be read
+	configFilePrefix = "ip-masq"
 )
 
 var (
@@ -79,12 +83,21 @@ func (d *Duration) UnmarshalJSON(json []byte) error {
 	return fmt.Errorf("expected string value for unmarshal to field of type Duration, got %q", s)
 }
 
-// NewMasqConfig returns a MasqConfig with default values
-func NewMasqConfig(masqAllReservedRanges bool) *MasqConfig {
+// EmptyMasqConfig returns a MasqConfig with empty values
+func EmptyMasqConfig() *MasqConfig {
+	return &MasqConfig{
+		NonMasqueradeCIDRs: make([]string, 0),
+		MasqLinkLocal:      false,
+		MasqLinkLocalIPv6:  false,
+	}
+}
+
+// DefaultMasqConfig returns a MasqConfig with default values, intended to be used when no config is found
+func DefaultMasqConfig() *MasqConfig {
 	// RFC 1918 defines the private ip address space as 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
 	nonMasq := []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"}
 
-	if masqAllReservedRanges {
+	if *noMasqueradeAllReservedRangesFlag {
 		nonMasq = append(nonMasq,
 			"100.64.0.0/10",   // RFC 6598
 			"192.0.0.0/24",    // RFC 6890
@@ -129,7 +142,7 @@ func main() {
 	flag.Parse()
 	masqChain = utiliptables.Chain(*masqChainFlag)
 
-	c := NewMasqConfig(*noMasqueradeAllReservedRangesFlag)
+	c := DefaultMasqConfig()
 
 	logs.InitLogs()
 	defer logs.FlushLogs()
@@ -176,7 +189,7 @@ func (m *MasqDaemon) osSyncConfig() error {
 // Error if the file is found but cannot be parsed.
 func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 	var err error
-	c := NewMasqConfig(*noMasqueradeAllReservedRangesFlag)
+	c := EmptyMasqConfig()
 	defer func() {
 		if err == nil {
 			json, _ := utiljson.Marshal(c)
@@ -184,40 +197,50 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 		}
 	}()
 
-	// check if file exists
-	if _, err = fs.Stat(configPath); os.IsNotExist(err) {
-		// file does not exist, use defaults
-		m.config.NonMasqueradeCIDRs = c.NonMasqueradeCIDRs
-		m.config.MasqLinkLocal = c.MasqLinkLocal
-		m.config.MasqLinkLocalIPv6 = c.MasqLinkLocalIPv6
-		glog.V(2).Infof("no config file found at %q, using default values", configPath)
-		return nil
-	}
-	glog.V(2).Infof("config file found at %q", configPath)
-
-	// file exists, read and parse file
-	yaml, err := fs.ReadFile(configPath)
+	files, err := fs.ReadDir(configPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read config directory, error: %w", err)
 	}
 
-	json, err := utilyaml.ToJSON(yaml)
-	if err != nil {
-		return err
+	var configAdded bool
+	for _, file := range files {
+		if strings.HasPrefix(file.Name(), configFilePrefix) {
+			glog.V(2).Infof("syncing config file %q at %q", file.Name(), configPath)
+			yaml, err := fs.ReadFile(filepath.Join(configPath, file.Name()))
+			if err != nil {
+				return fmt.Errorf("failed to read config file %q, error: %w", file.Name(), err)
+			}
+
+			json, err := utilyaml.ToJSON(yaml)
+			if err != nil {
+				return fmt.Errorf("failed to convert config file %q to JSON, error: %w", file.Name(), err)
+			}
+
+			var newConfig MasqConfig
+			if err = utiljson.Unmarshal(json, &newConfig); err != nil {
+				return fmt.Errorf("failed to unmarshal config file %q, error: %w", file.Name(), err)
+			}
+
+			c.merge(&newConfig)
+
+			configAdded = true
+		}
 	}
 
-	// Only overwrites fields provided in JSON
-	if err = utiljson.Unmarshal(json, c); err != nil {
-		return err
+	if !configAdded {
+		// no valid config files found, use defaults
+		c = DefaultMasqConfig()
+		glog.V(2).Infof("no valid config files found at %q, using default values", configPath)
 	}
 
 	// validate configuration
 	if err := c.validate(); err != nil {
-		return err
+		return fmt.Errorf("config is invalid, error: %w", err)
 	}
 
 	// apply new config
 	m.config = c
+
 	return nil
 }
 
@@ -238,6 +261,43 @@ func (c *MasqConfig) validate() error {
 		}
 	}
 	return nil
+}
+
+// merge combines the existing MasqConfig with newConfig. The bools are OR'd together.
+func (c *MasqConfig) merge(newConfig *MasqConfig) {
+	if newConfig.NonMasqueradeCIDRs != nil && len(newConfig.NonMasqueradeCIDRs) > 0 {
+		c.NonMasqueradeCIDRs = mergeCIDRs(c.NonMasqueradeCIDRs, newConfig.NonMasqueradeCIDRs)
+	}
+
+	c.MasqLinkLocal = c.MasqLinkLocal || newConfig.MasqLinkLocal
+	c.MasqLinkLocalIPv6 = c.MasqLinkLocalIPv6 || newConfig.MasqLinkLocalIPv6
+}
+
+// mergeCIDRS merges two slices of CIDRs into one, ignoring duplicates
+func mergeCIDRs(cidrs1, cidrs2 []string) []string {
+	cidrsSet := map[string]struct{}{}
+
+	for _, cidr := range cidrs1 {
+		cidrsSet[cidr] = struct{}{}
+	}
+
+	for _, cidr := range cidrs2 {
+		cidrsSet[cidr] = struct{}{}
+	}
+
+	var cidrsList []string
+	for cidr := range cidrsSet {
+		cidrsList = append(cidrsList, cidr)
+	}
+
+	return cidrsList
+}
+
+func min(x, y Duration) Duration {
+	if x < y {
+		return x
+	}
+	return y
 }
 
 const cidrParseErrFmt = "CIDR %q could not be parsed, %v"
