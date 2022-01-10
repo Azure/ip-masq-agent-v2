@@ -293,13 +293,6 @@ func mergeCIDRs(cidrs1, cidrs2 []string) []string {
 	return cidrsList
 }
 
-func min(x, y Duration) Duration {
-	if x < y {
-		return x
-	}
-	return y
-}
-
 const cidrParseErrFmt = "CIDR %q could not be parsed, %v"
 const cidrAlignErrFmt = "CIDR %q is not aligned to a CIDR block, ip: %q network: %q"
 
@@ -318,10 +311,13 @@ func validateCIDR(cidr string) error {
 
 func (m *MasqDaemon) syncMasqRules() error {
 	// make sure our custom chain for non-masquerade exists
-	m.iptables.EnsureChain(utiliptables.TableNAT, masqChain)
+	_, err := m.iptables.EnsureChain(utiliptables.TableNAT, masqChain)
+	if err != nil {
+		return err
+	}
 
 	// ensure that any non-local in POSTROUTING jumps to masqChain
-	if err := m.ensurePostroutingJump(); err != nil {
+	if err = m.ensurePostroutingJump(); err != nil {
 		return err
 	}
 
