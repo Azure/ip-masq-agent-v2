@@ -6,45 +6,50 @@ on:
   pull_request:
     branches: [ master ]
 
-env:
-  GO_VERSION: '1.16.1'
-
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: ${{ env.GO_VERSION }}
-      - name: Linter
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Lint
         uses: golangci/golangci-lint-action@v2
         with:
           version: latest
+          args:
+            -v
+            --max-same-issues 10
+            --disable-all
+            --exclude-use-default=false
+            -E asciicheck
+            -E deadcode
+            -E errcheck
+            -E forcetypeassert
+            -E gocritic
+            -E gofmt
+            -E goimports
+            -E gosimple
+            -E govet
+            -E ineffassign
+            -E misspell
+            -E staticcheck
+            -E structcheck
+            -E typecheck
+            -E unused
+            -E varcheck
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: ${{ env.GO_VERSION }}
-      - name: Download modules
-        run: go mod download
-      - name: Build
-        run: go build -v ./...
-  tests:
-    strategy:
-        matrix:
-          platform: [ ubuntu-latest, windows-latest ]
-    runs-on: ${{ matrix.platform }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - run: |
+          make build
+        name: Build
+  test:
+    runs-on: ubuntu-latest
     steps:
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ env.GO_VERSION }}
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Test
-      run: echo "run test command which is currently broken" # go test -v -race ./...
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - run: |
+          make test
+        name: Test
