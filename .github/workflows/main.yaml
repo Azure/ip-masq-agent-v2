@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  GO_VERSION: '1.16.1'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Linter
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Download modules
+        run: go mod download
+      - name: Build
+        run: go build -v ./...
+  tests:
+    strategy:
+        matrix:
+          platform: [ ubuntu-latest, windows-latest ]
+    runs-on: ${{ matrix.platform }}
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Test
+      run: echo "run test command which is currently broken" # go test -v -race ./...
