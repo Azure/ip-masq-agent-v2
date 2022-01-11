@@ -400,7 +400,8 @@ COMMIT
 		t.Run(tt.desc, func(t *testing.T) {
 			m := NewFakeMasqDaemon()
 			m.config = tt.cfg
-			if err := m.syncMasqRules(); err != nil {
+			err := m.syncMasqRules()
+			if err != nil {
 				t.Errorf("syncMasqRules failed, error: %v", err)
 			}
 			fipt, ok := m.iptables.(*iptest.FakeIPTables)
@@ -464,7 +465,8 @@ COMMIT
 			_ = flag.Set("enable-ipv6", "true")
 			m := NewFakeMasqDaemon()
 			m.config = tt.cfg
-			if err := m.syncMasqRulesIPv6(); err != nil {
+			err := m.syncMasqRulesIPv6()
+			if err != nil {
 				t.Errorf("syncMasqRules failed, error: %v", err)
 			}
 			fipt6, ok := m.ip6tables.(*iptest.FakeIPTables)
@@ -482,7 +484,8 @@ COMMIT
 // tests m.ensurePostroutingJump
 func TestEnsurePostroutingJump(t *testing.T) {
 	m := NewFakeMasqDaemon()
-	if err := m.ensurePostroutingJump(); err != nil {
+	err := m.ensurePostroutingJump()
+	if err != nil {
 		t.Errorf("error: %v", err)
 	}
 }

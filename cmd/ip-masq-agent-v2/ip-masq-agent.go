@@ -160,17 +160,20 @@ func (m *MasqDaemon) Run() {
 		func() {
 			defer time.Sleep(time.Duration(*resyncInterval) * time.Second)
 			// resync config
-			if err := m.osSyncConfig(); err != nil {
+			err := m.osSyncConfig()
+			if err != nil {
 				glog.Errorf("error syncing configuration: %v", err)
 				return
 			}
 			// resync rules
-			if err := m.syncMasqRules(); err != nil {
+			err = m.syncMasqRules()
+			if err != nil {
 				glog.Errorf("error syncing masquerade rules: %v", err)
 				return
 			}
 			// resync ipv6 rules
-			if err := m.syncMasqRulesIPv6(); err != nil {
+			err = m.syncMasqRulesIPv6()
+			if err != nil {
 				glog.Errorf("error syncing masquerade rules for ipv6: %v", err)
 				return
 			}
@@ -217,7 +220,8 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 			}
 
 			var newConfig MasqConfig
-			if err = utiljson.Unmarshal(json, &newConfig); err != nil {
+			err = utiljson.Unmarshal(json, &newConfig)
+			if err != nil {
 				return fmt.Errorf("failed to unmarshal config file %q, error: %w", file.Name(), err)
 			}
 
@@ -234,7 +238,8 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 	}
 
 	// validate configuration
-	if err := c.validate(); err != nil {
+	err = c.validate()
+	if err != nil {
 		return fmt.Errorf("config is invalid, error: %w", err)
 	}
 
@@ -252,7 +257,8 @@ func (c *MasqConfig) validate() error {
 	}
 	// check CIDRs are valid
 	for _, cidr := range c.NonMasqueradeCIDRs {
-		if err := validateCIDR(cidr); err != nil {
+		err := validateCIDR(cidr)
+		if err != nil {
 			return err
 		}
 		// can't configure ipv6 cidr if ipv6 is not enabled
@@ -317,7 +323,8 @@ func (m *MasqDaemon) syncMasqRules() error {
 	}
 
 	// ensure that any non-local in POSTROUTING jumps to masqChain
-	if err = m.ensurePostroutingJump(); err != nil {
+	err = m.ensurePostroutingJump()
+	if err != nil {
 		return err
 	}
 
@@ -343,7 +350,8 @@ func (m *MasqDaemon) syncMasqRules() error {
 
 	writeLine(lines, "COMMIT")
 
-	if err := m.iptables.RestoreAll(lines.Bytes(), utiliptables.NoFlushTables, utiliptables.NoRestoreCounters); err != nil {
+	err = m.iptables.RestoreAll(lines.Bytes(), utiliptables.NoFlushTables, utiliptables.NoRestoreCounters)
+	if err != nil {
 		return err
 	}
 	return nil
@@ -359,7 +367,8 @@ func (m *MasqDaemon) syncMasqRulesIPv6() error {
 			return err
 		}
 		// ensure that any non-local in POSTROUTING jumps to masqChain
-		if err := m.ensurePostroutingJumpIPv6(); err != nil {
+		err = m.ensurePostroutingJumpIPv6()
+		if err != nil {
 			return err
 		}
 		// build up lines to pass to ip6tables-restore
@@ -383,7 +392,8 @@ func (m *MasqDaemon) syncMasqRulesIPv6() error {
 
 		writeLine(lines6, "COMMIT")
 
-		if err := m.ip6tables.RestoreAll(lines6.Bytes(), utiliptables.NoFlushTables, utiliptables.NoRestoreCounters); err != nil {
+		err = m.ip6tables.RestoreAll(lines6.Bytes(), utiliptables.NoFlushTables, utiliptables.NoRestoreCounters)
+		if err != nil {
 			return err
 		}
 	}
@@ -399,18 +409,20 @@ func postroutingJumpComment() string {
 }
 
 func (m *MasqDaemon) ensurePostroutingJump() error {
-	if _, err := m.iptables.EnsureRule(utiliptables.Append, utiliptables.TableNAT, utiliptables.ChainPostrouting,
+	_, err := m.iptables.EnsureRule(utiliptables.Append, utiliptables.TableNAT, utiliptables.ChainPostrouting,
 		"-m", "comment", "--comment", postroutingJumpComment(),
-		"-m", "addrtype", "!", "--dst-type", "LOCAL", "-j", string(masqChain)); err != nil {
+		"-m", "addrtype", "!", "--dst-type", "LOCAL", "-j", string(masqChain))
+	if err != nil {
 		return fmt.Errorf("failed to ensure that %s chain %s jumps to MASQUERADE: %v", utiliptables.TableNAT, masqChain, err)
 	}
 	return nil
 }
 
 func (m *MasqDaemon) ensurePostroutingJumpIPv6() error {
-	if _, err := m.ip6tables.EnsureRule(utiliptables.Append, utiliptables.TableNAT, utiliptables.ChainPostrouting,
+	_, err := m.ip6tables.EnsureRule(utiliptables.Append, utiliptables.TableNAT, utiliptables.ChainPostrouting,
 		"-m", "comment", "--comment", postroutingJumpComment(),
-		"-m", "addrtype", "!", "--dst-type", "LOCAL", "-j", string(masqChain)); err != nil {
+		"-m", "addrtype", "!", "--dst-type", "LOCAL", "-j", string(masqChain))
+	if err != nil {
 		return fmt.Errorf("failed to ensure that %s chain %s jumps to MASQUERADE: %v for ipv6", utiliptables.TableNAT, masqChain, err)
 	}
 	return nil
