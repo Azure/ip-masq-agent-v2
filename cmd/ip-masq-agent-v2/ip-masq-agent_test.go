@@ -27,12 +27,12 @@ import (
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 	iptest "k8s.io/kubernetes/pkg/util/iptables/testing"
 
-	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent/testing/fakefs"
+	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent-v2/testing/fakefs"
 )
 
 // turn off glog logging during tests to avoid clutter in output
 func TestMain(m *testing.M) {
-	flag.Set("logtostderr", "false")
+	_ = flag.Set("logtostderr", "false")
 	ec := m.Run()
 	os.Exit(ec)
 }
@@ -312,7 +312,7 @@ nonMasqueradeCIDRs:
 // tests MasqDaemon.syncConfig
 func TestSyncConfig(t *testing.T) {
 	for _, tt := range syncConfigTests {
-		flag.Set("enable-ipv6", "true")
+		_ = flag.Set("enable-ipv6", "true")
 		m := NewFakeMasqDaemon()
 		m.config = NewMasqConfigNoReservedRanges()
 		err := m.syncConfig(tt.fs)
@@ -400,7 +400,10 @@ COMMIT
 		t.Run(tt.desc, func(t *testing.T) {
 			m := NewFakeMasqDaemon()
 			m.config = tt.cfg
-			m.syncMasqRules()
+			err := m.syncMasqRules()
+			if err != nil {
+				t.Errorf("syncMasqRules failed, error: %v", err)
+			}
 			fipt, ok := m.iptables.(*iptest.FakeIPTables)
 			if !ok {
 				t.Errorf("MasqDaemon wasn't using the expected iptables mock")
@@ -459,10 +462,13 @@ COMMIT
 
 	for _, tt := range syncMasqRulesIPv6Tests {
 		t.Run(tt.desc, func(t *testing.T) {
-			flag.Set("enable-ipv6", "true")
+			_ = flag.Set("enable-ipv6", "true")
 			m := NewFakeMasqDaemon()
 			m.config = tt.cfg
-			m.syncMasqRulesIPv6()
+			err := m.syncMasqRulesIPv6()
+			if err != nil {
+				t.Errorf("syncMasqRules failed, error: %v", err)
+			}
 			fipt6, ok := m.ip6tables.(*iptest.FakeIPTables)
 			if !ok {
 				t.Errorf("MasqDaemon wasn't using the expected iptables mock")
@@ -478,7 +484,8 @@ COMMIT
 // tests m.ensurePostroutingJump
 func TestEnsurePostroutingJump(t *testing.T) {
 	m := NewFakeMasqDaemon()
-	if err := m.ensurePostroutingJump(); err != nil {
+	err := m.ensurePostroutingJump()
+	if err != nil {
 		t.Errorf("error: %v", err)
 	}
 }
