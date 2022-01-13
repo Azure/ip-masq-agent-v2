@@ -3,6 +3,7 @@
 [![CI](https://github.com/Azure/ip-masq-agent-v2/actions/workflows/main.yaml/badge.svg)](https://github.com/Azure/ip-masq-agent-v2/actions/workflows/main.yaml)
 [![CodeQL](https://github.com/Azure/ip-masq-agent-v2/actions/workflows/codeql-analysis.yaml/badge.svg)](https://github.com/Azure/ip-masq-agent-v2/actions/workflows/codeql-analysis.yaml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/azure/ip-masq-agent-v2)](https://goreportcard.com/report/github.com/azure/ip-masq-agent-v2)
+[![GoDoc](https://godoc.org/github.com/azure/ip-masq-agent-v2?status.svg)](https://pkg.go.dev/github.com/azure/ip-masq-agent-v2)
 
 Based on the original [ip-masq-agent](https://github.com/kubernetes-sigs/ip-masq-agent), v2 aims to solve more specific networking cases, allow for more configuration options, and improve observability. This includes:
 * Merging configuration from multiple sources
