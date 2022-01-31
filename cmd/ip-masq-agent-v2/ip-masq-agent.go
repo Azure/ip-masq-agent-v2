@@ -150,34 +150,34 @@ func main() {
 	verflag.PrintAndExitIfRequested()
 
 	m := NewMasqDaemon(c)
-	m.Run()
+	err := m.Run()
+
+	if err != nil {
+		glog.Fatalf("the daemon encountered an error: %v", err)
+	}
 }
 
 // Run ...
-func (m *MasqDaemon) Run() {
+func (m *MasqDaemon) Run() error {
 	// Periodically resync to reconfigure or heal from any rule decay
 	for {
-		func() {
-			defer time.Sleep(time.Duration(*resyncInterval) * time.Second)
-			// resync config
-			err := m.osSyncConfig()
-			if err != nil {
-				glog.Errorf("error syncing configuration: %v", err)
-				return
-			}
-			// resync rules
-			err = m.syncMasqRules()
-			if err != nil {
-				glog.Errorf("error syncing masquerade rules: %v", err)
-				return
-			}
-			// resync ipv6 rules
-			err = m.syncMasqRulesIPv6()
-			if err != nil {
-				glog.Errorf("error syncing masquerade rules for ipv6: %v", err)
-				return
-			}
-		}()
+		// resync config
+		err := m.osSyncConfig()
+		if err != nil {
+			return fmt.Errorf("error syncing configuration: %w", err)
+		}
+		// resync rules
+		err = m.syncMasqRules()
+		if err != nil {
+			return fmt.Errorf("error syncing masquerade rules: %w", err)
+		}
+		// resync ipv6 rules
+		err = m.syncMasqRulesIPv6()
+		if err != nil {
+			return fmt.Errorf("error syncing masquerade rules for ipv6: %w", err)
+		}
+
+		time.Sleep(time.Duration(*resyncInterval) * time.Second)
 	}
 }
 
