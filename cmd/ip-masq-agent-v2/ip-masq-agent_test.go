@@ -317,7 +317,7 @@ nonMasqueradeCIDRs:
   - 
 `}}}, fmt.Errorf("config is invalid, error: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
 
-{"single invalid yaml file, mix valid and empty values",
+	{"single invalid yaml file, mix valid and empty values",
 		fakefs.StringFS{Files: []fakefs.File{{
 			Name: configFilePrefix + "-config-0",
 			Path: configPath,
@@ -347,10 +347,10 @@ nonMasqueradeCIDRs:
 nonMasqueradeCIDRs:
   -
 `},
-		{
-			Name: configFilePrefix + "-config-1",
-			Path: configPath,
-			Content: `
+			{
+				Name: configFilePrefix + "-config-1",
+				Path: configPath,
+				Content: `
 nonMasqueradeCIDRs:
   - 192.168.0.0/24
 masqLinkLocal: true
