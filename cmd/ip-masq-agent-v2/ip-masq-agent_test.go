@@ -357,26 +357,26 @@ masqLinkLocal: true
 masqLinkLocalIPv6: true
 `}}}, fmt.Errorf("config ip-masq-config-0 is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
 
-{"multiple json files, but one has empty CIDR", fakefs.StringFS{Files: []fakefs.File{{
-	Name: configFilePrefix + "-config-0",
-	Path: configPath,
-	Content: `
+	{"multiple json files, but one has empty CIDR", fakefs.StringFS{Files: []fakefs.File{{
+		Name: configFilePrefix + "-config-0",
+		Path: configPath,
+		Content: `
 	{
 	  "nonMasqueradeCIDRs": ["111.254.0.0/15", "8.0.0.0/8"],
 	  "masqLinkLocal": false,
 	  "masqLinkLocalIPv6": false
 	}
 	`}, {
-	Name: configFilePrefix + "-config-1",
-	Path: configPath,
-	Content: `
+		Name: configFilePrefix + "-config-1",
+		Path: configPath,
+		Content: `
 	{
 	  "nonMasqueradeCIDRs": [null, "172.168.0.0/16"],
 	  "masqLinkLocal": true,
 	  "masqLinkLocalIPv6": true
 	}
 	`},
-}}, fmt.Errorf("config ip-masq-config-1 is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
+	}}, fmt.Errorf("config ip-masq-config-1 is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
 }
 
 // tests MasqDaemon.syncConfig
