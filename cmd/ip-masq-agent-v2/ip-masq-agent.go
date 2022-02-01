@@ -225,6 +225,11 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 				return fmt.Errorf("failed to unmarshal config file %q, error: %w", file.Name(), err)
 			}
 
+			err = newConfig.validate()
+			if err != nil {
+				return fmt.Errorf("config %s is invalid: %w", file.Name(), err)
+			}
+
 			c.merge(&newConfig)
 
 			configAdded = true
@@ -235,12 +240,6 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 		// no valid config files found, use defaults
 		c = DefaultMasqConfig()
 		glog.V(2).Infof("no valid config files found at %q, using default values", configPath)
-	}
-
-	// validate configuration
-	err = c.validate()
-	if err != nil {
-		return fmt.Errorf("config is invalid, error: %w", err)
 	}
 
 	// apply new config
