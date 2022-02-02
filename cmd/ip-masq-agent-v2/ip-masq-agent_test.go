@@ -315,7 +315,7 @@ nonMasqueradeCIDRs:
 			Content: `
 nonMasqueradeCIDRs:
   - 
-`}}}, fmt.Errorf("config ip-masq-config-0 is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
+`}}}, fmt.Errorf("config file \"ip-masq-config-0\" is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
 
 	{"single invalid yaml file, mix valid and empty values",
 		fakefs.StringFS{Files: []fakefs.File{{
@@ -328,7 +328,7 @@ nonMasqueradeCIDRs:
   - fd88:1234::/80
 masqLinkLocal: true
 masqLinkLocalIPv6: true
-`}}}, fmt.Errorf("config ip-masq-config-0 is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
+`}}}, fmt.Errorf("config file \"ip-masq-config-0\" is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
 
 	{"single invalid yaml file, whitespace",
 		fakefs.StringFS{Files: []fakefs.File{{
@@ -337,7 +337,7 @@ masqLinkLocalIPv6: true
 			Content: `
 nonMasqueradeCIDRs:
   - ""
-`}}}, fmt.Errorf("config ip-masq-config-0 is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
+`}}}, fmt.Errorf("config file \"ip-masq-config-0\" is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
 
 	{"multiple yaml configs, one bad config - empty CIDR value",
 		fakefs.StringFS{Files: []fakefs.File{{
@@ -355,7 +355,7 @@ nonMasqueradeCIDRs:
   - 192.168.0.0/24
 masqLinkLocal: true
 masqLinkLocalIPv6: true
-`}}}, fmt.Errorf("config ip-masq-config-0 is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
+`}}}, fmt.Errorf("config file \"ip-masq-config-0\" is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
 
 	{"multiple json files, but one has empty CIDR", fakefs.StringFS{Files: []fakefs.File{{
 		Name: configFilePrefix + "-config-0",
@@ -376,7 +376,7 @@ masqLinkLocalIPv6: true
 	  "masqLinkLocalIPv6": true
 	}
 	`},
-	}}, fmt.Errorf("config ip-masq-config-1 is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
+	}}, fmt.Errorf("config file \"ip-masq-config-1 is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
 }
 
 // tests MasqDaemon.syncConfig
