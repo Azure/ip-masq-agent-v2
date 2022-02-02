@@ -376,7 +376,7 @@ masqLinkLocalIPv6: true
 	  "masqLinkLocalIPv6": true
 	}
 	`},
-	}}, fmt.Errorf("config file \"ip-masq-config-1 is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
+	}}, fmt.Errorf("config file \"ip-masq-config-1\" is invalid: CIDR \"\" could not be parsed, invalid CIDR address: "), NewMasqConfigNoReservedRanges()},
 }
 
 // tests MasqDaemon.syncConfig
