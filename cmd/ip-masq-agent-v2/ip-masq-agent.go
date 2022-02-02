@@ -227,7 +227,7 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 
 			err = newConfig.validate()
 			if err != nil {
-				return fmt.Errorf("config %s is invalid: %w", file.Name(), err)
+				return fmt.Errorf("config file %q is invalid: %w", file.Name(), err)
 			}
 
 			c.merge(&newConfig)
