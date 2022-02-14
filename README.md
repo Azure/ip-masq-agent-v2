@@ -24,10 +24,8 @@ IPs that match the rules (except for the final rule) in `IP-MASQ-AGENT` are *not
 This repo includes an example yaml file that can be used to launch the ip-masq-agent as a DaemonSet in a Kubernetes cluster.
 
 ```
-kubectl create -f ip-masq-agent.yaml
+kubectl create -f examples/ip-masq-agent.yaml
 ```
-
-The spec in `ip-masq-agent.yaml` specifies the `kube-system` namespace for the DaemonSet Pods.
 
 ## Configuring the agent
 
@@ -42,15 +40,26 @@ The agent configuration file should be written in yaml or json syntax, and may c
 - `masqLinkLocal bool`: Whether to masquerade traffic to `169.254.0.0/16`. False by default.
 - `masqLinkLocalIPv6 bool`: Whether to masquerade traffic to `fe80::/10`. False by default.
 
-The agent will look for a config file in its container at `/etc/config/ip-masq-agent`. This file can be provided via a `ConfigMap`, plumbed into the container via a `ConfigMapVolumeSource`. As a result, the agent can be reconfigured in a live cluster by creating or editing this `ConfigMap`.
+The agent will look for config files in its container at `/etc/config/`. This file can be provided via a `ConfigMap`, plumbed into the container by specifying it as a [projected volume](https://kubernetes.io/docs/concepts/storage/projected-volumes/), and mounting it. 
 
-This repo includes a directory-representation of a `ConfigMap` that can configure the agent (the `agent-config` directory). To use this directory to create the `ConfigMap` in your cluster:
+As a result, the agent can be reconfigured in a live cluster by creating or editing these `ConfigMaps`. Please ensure that your file name in the `ConfigMaps` matches the config file prefix: `ip-masq-*`. 
+
+This repo includes an example use-case. You can modify it to your needs and apply it to your cluster:
 
 ```
-kubectl create configmap ip-masq-agent --from-file=agent-config --namespace=kube-system
+kubectl create configmap examples/config-custom.yaml
 ```
 
-Note that we created the `ConfigMap` in the same namespace as the DaemonSet Pods, and named the `ConfigMap` to match the spec in `ip-masq-agent.yaml`. This is necessary for the `ConfigMap` to appear in the Pods' filesystems.
+Note that we created the `ConfigMap` in the same namespace as the DaemonSet Pods, and named the `ConfigMap` to match the spec in `examples/ip-masq-agent.yaml`. This is necessary for the `ConfigMap` to appear in the Pods' filesystems.
+
+Tolerance of multiple `ConfigMaps` allows custom keys to be defined while avoiding conflicts of any `ConfigMaps` that will need to be reconciled dynamically. This repo also provides an example of what might be configured by a cloud provider:
+
+```
+kubectl create configmap examples/config-cloud.yaml
+```
+
+The cloud provider may wish to reconcile a `ConfigMap` so that it can be in-sync with the subnet of the cluster.
+
 
 ### Agent Flags
 
@@ -73,7 +82,6 @@ This agent solves the problem of configuring the CIDR ranges for non-masquerade 
 Some users will want to communicate between these ranges without masquerade - for instance, if an organization's existing network uses the `10/8` range, they may wish to run their cluster and `Pod`s in `192.168/16` to avoid IP conflicts. They will also want these `Pod`s to be able to communicate efficiently (no masquerade) with each-other *and* with their existing network resources in `10/8`. This requires that every node in their cluster skips masquerade for both ranges.
 
 We are trying to eliminate networking code from the Kubelet, so rather than extend the Kubelet to accept multiple CIDRs, ip-masq-agent allows you to run a DaemonSet that configures a list of CIDRs as non-masquerade.
-
 
 ## Contributing
 
