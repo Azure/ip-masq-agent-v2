@@ -64,7 +64,7 @@ ifeq ($(ARCH),ppc64le)
     BASEIMAGE?=k8s.gcr.io/build-image/debian-iptables-ppc64le:buster-v1.7.0
 endif
 
-TAG := $(VERSION)__$(OS)_$(ARCH)
+TAG := $(VERSION)
 
 BUILD_IMAGE ?= golang:1.17-alpine
 
