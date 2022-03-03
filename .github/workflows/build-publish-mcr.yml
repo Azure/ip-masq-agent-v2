@@ -62,7 +62,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: 'Run Azure CLI commands'
         run: |
-          REGISTRY=${{ secrets.AZURE_REGISTRY_SERVER }} VERSION={{ steps.changelog_reader.outputs.version }} make build
+          REGISTRY=${{ secrets.AZURE_REGISTRY_SERVER }} VERSION=${{ steps.changelog_reader.outputs.version }} make build
           docker tag public/aks/ip-masq-agent-v2 ${{ secrets.AZURE_REGISTRY_SERVER }}/public/aks/ip-masq-agent-v2:${{ steps.changelog_reader.outputs.version }}
           az acr login -n ${{ secrets.AZURE_REGISTRY_SERVER }}
           docker push ${{ secrets.AZURE_REGISTRY_SERVER }}/public/aks/ip-masq-agent-v2${{ steps.changelog_reader.outputs.version }}
