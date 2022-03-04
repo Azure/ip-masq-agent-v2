@@ -27,13 +27,11 @@ import (
 	"time"
 
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
-	"k8s.io/apiserver/pkg/util/logs"
+	"k8s.io/klog/v2"
 	utildbus "k8s.io/kubernetes/pkg/util/dbus"
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 	"k8s.io/kubernetes/pkg/version/verflag"
 	utilexec "k8s.io/utils/exec"
-
-	"github.com/golang/glog"
 
 	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent-v2/testing/fakefs"
 )
@@ -144,8 +142,7 @@ func main() {
 
 	c := DefaultMasqConfig()
 
-	logs.InitLogs()
-	defer logs.FlushLogs()
+	defer klog.Flush()
 
 	verflag.PrintAndExitIfRequested()
 
@@ -153,7 +150,7 @@ func main() {
 	err := m.Run()
 
 	if err != nil {
-		glog.Fatalf("the daemon encountered an error: %v", err)
+		klog.Fatalf("the daemon encountered an error: %v", err)
 	}
 }
 
@@ -196,7 +193,7 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 	defer func() {
 		if err == nil {
 			json, _ := utiljson.Marshal(c)
-			glog.V(2).Infof("using config: %s", string(json))
+			klog.V(2).Infof("using config: %s", string(json))
 		}
 	}()
 
@@ -208,7 +205,7 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 	var configAdded bool
 	for _, file := range files {
 		if strings.HasPrefix(file.Name(), configFilePrefix) {
-			glog.V(2).Infof("syncing config file %q at %q", file.Name(), configPath)
+			klog.V(2).Infof("syncing config file %q at %q", file.Name(), configPath)
 			yaml, err := fs.ReadFile(filepath.Join(configPath, file.Name()))
 			if err != nil {
 				return fmt.Errorf("failed to read config file %q, error: %w", file.Name(), err)
@@ -239,7 +236,7 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 	if !configAdded {
 		// no valid config files found, use defaults
 		c = DefaultMasqConfig()
-		glog.V(2).Infof("no valid config files found at %q, using default values", configPath)
+		klog.V(2).Infof("no valid config files found at %q, using default values", configPath)
 	}
 
 	// apply new config

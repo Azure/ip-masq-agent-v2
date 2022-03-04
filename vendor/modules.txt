@@ -1,43 +1,55 @@
-# github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680
-## explicit
-github.com/ghodss/yaml
-# github.com/godbus/dbus v0.0.0-20151105175453-c7fdd8b5cd55
+# github.com/go-logr/logr v0.4.0
+## explicit; go 1.14
+github.com/go-logr/logr
+# github.com/godbus/dbus v4.1.0+incompatible
 ## explicit
 github.com/godbus/dbus
-# github.com/golang/glog v0.0.0-20141105023935-44145f04b68c
-## explicit
-github.com/golang/glog
-# github.com/spf13/pflag v0.0.0-20170130214245-9ff6c6923cff
-## explicit
+# github.com/spf13/pflag v1.0.5
+## explicit; go 1.12
 github.com/spf13/pflag
-# golang.org/x/sys v0.0.0-20180709060233-1b2967e3c290
-## explicit
+# golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a
+## explicit; go 1.12
 golang.org/x/sys/unix
-# gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
-## explicit; go 1.11
-# gopkg.in/yaml.v2 v2.0.0-20150924142314-53feefa2559f
+# gopkg.in/yaml.v2 v2.2.8
 ## explicit
 gopkg.in/yaml.v2
-# k8s.io/apimachinery v0.0.0-20170416202754-ce019b30a1f4
-## explicit
+# k8s.io/apimachinery v0.22.2 => k8s.io/apimachinery v0.16.8
+## explicit; go 1.12
 k8s.io/apimachinery/pkg/util/errors
 k8s.io/apimachinery/pkg/util/runtime
 k8s.io/apimachinery/pkg/util/sets
+k8s.io/apimachinery/pkg/util/version
 k8s.io/apimachinery/pkg/util/wait
 k8s.io/apimachinery/pkg/util/yaml
 k8s.io/apimachinery/pkg/version
-# k8s.io/apiserver v0.0.0-20170417203629-48bf36441a1c
-## explicit
-k8s.io/apiserver/pkg/util/logs
-k8s.io/apiserver/pkg/util/trace
-# k8s.io/kubernetes v0.21.1-0.20180917200753-80fb2be3e42e
-## explicit
+# k8s.io/klog v1.0.0
+## explicit; go 1.12
+k8s.io/klog
+# k8s.io/klog/v2 v2.9.0
+## explicit; go 1.13
+k8s.io/klog/v2
+# k8s.io/kubernetes v1.16.15
+## explicit; go 1.12
 k8s.io/kubernetes/pkg/util/dbus
 k8s.io/kubernetes/pkg/util/iptables
 k8s.io/kubernetes/pkg/util/iptables/testing
-k8s.io/kubernetes/pkg/util/version
 k8s.io/kubernetes/pkg/version
 k8s.io/kubernetes/pkg/version/verflag
-# k8s.io/utils v0.0.0-20180817171939-982821ea41da
-## explicit
+# k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a
+## explicit; go 1.12
 k8s.io/utils/exec
+k8s.io/utils/trace
+# sigs.k8s.io/yaml v1.1.0
+## explicit
+sigs.k8s.io/yaml
+# k8s.io/apimachinery => k8s.io/apimachinery v0.16.8
+# k8s.io/cloud-provider => k8s.io/cloud-provider v0.16.8
+# k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.16.8
+# k8s.io/cri-api => k8s.io/cri-api v0.16.8
+# k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.16.8
+# k8s.io/helm => go.goms.io/aks/helm v2.16.17-aks+incompatible
+# k8s.io/kubectl => k8s.io/kubectl v0.16.8
+# k8s.io/kubelet => k8s.io/kubelet v0.16.8
+# k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.16.8
+# k8s.io/metrics => k8s.io/metrics v0.16.8
+# k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.16.8
