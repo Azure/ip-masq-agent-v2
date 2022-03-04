@@ -21,7 +21,7 @@ k8s.io/apimachinery v0.0.0-20170416202754-ce019b30a1f4 h1:tYdiXYGbxLVC25f93o3pXN
 k8s.io/apimachinery v0.0.0-20170416202754-ce019b30a1f4/go.mod h1:ccL7Eh7zubPUSh9A3USN90/OzHNSVN6zxzde07TDCL0=
 k8s.io/apiserver v0.0.0-20170417203629-48bf36441a1c h1:0Y0ta+ZoLxhn8yNkehHClk026b/aj3JPSoVBqn2fALA=
 k8s.io/apiserver v0.0.0-20170417203629-48bf36441a1c/go.mod h1:6bqaTSOSJavUIXUtfaR9Os9JtTCm8ZqH2SUl2S60C4w=
-k8s.io/kubernetes v0.21.1-0.20180917200753-80fb2be3e42e h1:sdu96WDcO5PHgma7dHy+LB4T+k9GE7QcZdVlQ8ByPDM=
-k8s.io/kubernetes v0.21.1-0.20180917200753-80fb2be3e42e/go.mod h1:ocZa8+6APFNC2tX1DZASIbocyYT5jHzqFVsY5aoB7Jk=
+k8s.io/kubernetes v1.13.0-alpha.0.0.20180917200753-80fb2be3e42e h1:WCxanXOCAZjLXyYFnPE+QNlsQ56aJu2JWxTehWMs9fI=
+k8s.io/kubernetes v1.13.0-alpha.0.0.20180917200753-80fb2be3e42e/go.mod h1:ocZa8+6APFNC2tX1DZASIbocyYT5jHzqFVsY5aoB7Jk=
 k8s.io/utils v0.0.0-20180817171939-982821ea41da h1:iSRsIrQWeKa5IIqOOpvhnN2E/7iz+v8VingQHJ3lGhI=
 k8s.io/utils v0.0.0-20180817171939-982821ea41da/go.mod h1:8k8uAuAQ0rXslZKaEWd0c3oVhZz7sSzSiPnVZayjIX0=
