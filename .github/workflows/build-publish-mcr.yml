@@ -63,7 +63,7 @@ jobs:
       - name: 'Run Azure CLI commands'
         run: |
           az acr login -n ${{ secrets.AZURE_REGISTRY_SERVER }}
-          REGISTRY=${{ secrets.AZURE_REGISTRY_SERVER }}/public/aks/ VERSION=${{ steps.changelog_reader.outputs.version }} make push
+          REGISTRY=${{ secrets.AZURE_REGISTRY_SERVER }}/public/aks VERSION=${{ steps.changelog_reader.outputs.version }} make push
           #docker tag public/aks/ip-masq-agent-v2 ${{ secrets.AZURE_REGISTRY_SERVER }}/public/aks/ip-masq-agent-v2:${{ steps.changelog_reader.outputs.version }}
           #docker push ${{ secrets.AZURE_REGISTRY_SERVER }}/public/aks/ip-masq-agent-v2:${{ steps.changelog_reader.outputs.version }}
           echo "acr push done"
