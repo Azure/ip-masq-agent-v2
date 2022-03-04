@@ -30,7 +30,7 @@ k8s.io/apimachinery/pkg/version
 ## explicit
 k8s.io/apiserver/pkg/util/logs
 k8s.io/apiserver/pkg/util/trace
-# k8s.io/kubernetes v0.21.1-0.20180917200753-80fb2be3e42e
+# k8s.io/kubernetes v1.13.0-alpha.0.0.20180917200753-80fb2be3e42e
 ## explicit
 k8s.io/kubernetes/pkg/util/dbus
 k8s.io/kubernetes/pkg/util/iptables
