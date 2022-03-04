@@ -1,0 +1,69 @@
+name: Building and pushing mcr
+on: [workflow_dispatch]
+
+permissions:
+      id-token: write
+      contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          args:
+            -v
+            --max-same-issues 10
+            --disable-all
+            --exclude-use-default=false
+            -E asciicheck
+            -E deadcode
+            -E errcheck
+            -E forcetypeassert
+            -E gocritic
+            -E gofmt
+            -E goimports
+            -E gosimple
+            -E govet
+            -E ineffassign
+            -E misspell
+            -E staticcheck
+            -E structcheck
+            -E typecheck
+            -E unused
+            -E varcheck
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - run: |
+          make build
+        name: Build
+      - name: Get Changelog Entry
+        id: changelog_reader
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          validation_depth: 10
+          path: ./CHANGELOG.md
+      - name: Display output
+        run: |
+           echo "Version: ${{ steps.changelog_reader.outputs.version }}"
+           echo "Changes: ${{ steps.changelog_reader.outputs.changes }}"
+      - name: 'Az CLI login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: 'Run Azure CLI commands'
+        run: |
+          az acr login -n ${{ secrets.AZURE_REGISTRY_SERVER }}
+          REGISTRY=${{ secrets.AZURE_REGISTRY_SERVER }}/public/aks VERSION=${{ steps.changelog_reader.outputs.version }} make push
+          echo "ACR push done"
+
+      
