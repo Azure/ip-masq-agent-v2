@@ -27,9 +27,13 @@ import (
 	"time"
 
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
-	"k8s.io/klog/v2"
+	"k8s.io/apiserver/pkg/util/logs"
+	utildbus "k8s.io/kubernetes/pkg/util/dbus"
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
+	"k8s.io/kubernetes/pkg/version/verflag"
 	utilexec "k8s.io/utils/exec"
+
+	"github.com/golang/glog"
 
 	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent-v2/testing/fakefs"
 )
@@ -121,12 +125,12 @@ type MasqDaemon struct {
 
 // NewMasqDaemon returns a MasqDaemon with default values, including an initialized utiliptables.Interface
 func NewMasqDaemon(c *MasqConfig) *MasqDaemon {
-	// No longer using dbus package, see:
-	// https://github.com/kubernetes/kubernetes/pull/81517
-
 	execer := utilexec.New()
-	iptables := utiliptables.New(execer, utiliptables.ProtocolIPv4)
-	ip6tables := utiliptables.New(execer, utiliptables.ProtocolIPv6)
+	dbus := utildbus.New()
+	protocolv4 := utiliptables.ProtocolIpv4
+	protocolv6 := utiliptables.ProtocolIpv6
+	iptables := utiliptables.New(execer, dbus, protocolv4)
+	ip6tables := utiliptables.New(execer, dbus, protocolv6)
 	return &MasqDaemon{
 		config:    c,
 		iptables:  iptables,
@@ -140,13 +144,16 @@ func main() {
 
 	c := DefaultMasqConfig()
 
-	defer klog.Flush()
+	logs.InitLogs()
+	defer logs.FlushLogs()
+
+	verflag.PrintAndExitIfRequested()
 
 	m := NewMasqDaemon(c)
 	err := m.Run()
 
 	if err != nil {
-		klog.Fatalf("the daemon encountered an error: %v", err)
+		glog.Fatalf("the daemon encountered an error: %v", err)
 	}
 }
 
@@ -189,7 +196,7 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 	defer func() {
 		if err == nil {
 			json, _ := utiljson.Marshal(c)
-			klog.V(2).Infof("using config: %s", string(json))
+			glog.V(2).Infof("using config: %s", string(json))
 		}
 	}()
 
@@ -201,7 +208,7 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 	var configAdded bool
 	for _, file := range files {
 		if strings.HasPrefix(file.Name(), configFilePrefix) {
-			klog.V(2).Infof("syncing config file %q at %q", file.Name(), configPath)
+			glog.V(2).Infof("syncing config file %q at %q", file.Name(), configPath)
 			yaml, err := fs.ReadFile(filepath.Join(configPath, file.Name()))
 			if err != nil {
 				return fmt.Errorf("failed to read config file %q, error: %w", file.Name(), err)
@@ -232,7 +239,7 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 	if !configAdded {
 		// no valid config files found, use defaults
 		c = DefaultMasqConfig()
-		klog.V(2).Infof("no valid config files found at %q, using default values", configPath)
+		glog.V(2).Infof("no valid config files found at %q, using default values", configPath)
 	}
 
 	// apply new config
