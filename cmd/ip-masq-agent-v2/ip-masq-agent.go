@@ -27,6 +27,7 @@ import (
 	"time"
 
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/component-base/logs"
 	"k8s.io/klog/v2"
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 	utilexec "k8s.io/utils/exec"
@@ -140,7 +141,8 @@ func main() {
 
 	c := DefaultMasqConfig()
 
-	defer klog.Flush()
+	logs.InitLogs()
+	defer logs.FlushLogs()
 
 	m := NewMasqDaemon(c)
 	err := m.Run()
