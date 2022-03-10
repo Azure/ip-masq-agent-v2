@@ -28,9 +28,7 @@ import (
 
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/klog/v2"
-	utildbus "k8s.io/kubernetes/pkg/util/dbus"
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
-	"k8s.io/kubernetes/pkg/version/verflag"
 	utilexec "k8s.io/utils/exec"
 
 	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent-v2/testing/fakefs"
@@ -104,7 +102,7 @@ func DefaultMasqConfig() *MasqConfig {
 			"198.18.0.0/15",   // RFC 6815
 			"198.51.100.0/24", // RFC 5737
 			"203.0.113.0/24",  // RFC 5737
-			"240.0.0.0/4")     // RFC 5735, Former Class E range obsoleted by RFC 3232
+			"240.0.0.0/4") // RFC 5735, Former Class E range obsoleted by RFC 3232
 	}
 
 	return &MasqConfig{
@@ -123,12 +121,12 @@ type MasqDaemon struct {
 
 // NewMasqDaemon returns a MasqDaemon with default values, including an initialized utiliptables.Interface
 func NewMasqDaemon(c *MasqConfig) *MasqDaemon {
+	// No longer using dbus package, see:
+	// https://github.com/kubernetes/kubernetes/pull/81517
+
 	execer := utilexec.New()
-	dbus := utildbus.New()
-	protocolv4 := utiliptables.ProtocolIpv4
-	protocolv6 := utiliptables.ProtocolIpv6
-	iptables := utiliptables.New(execer, dbus, protocolv4)
-	ip6tables := utiliptables.New(execer, dbus, protocolv6)
+	iptables := utiliptables.New(execer, utiliptables.ProtocolIPv4)
+	ip6tables := utiliptables.New(execer, utiliptables.ProtocolIPv6)
 	return &MasqDaemon{
 		config:    c,
 		iptables:  iptables,
@@ -143,8 +141,6 @@ func main() {
 	c := DefaultMasqConfig()
 
 	defer klog.Flush()
-
-	verflag.PrintAndExitIfRequested()
 
 	m := NewMasqDaemon(c)
 	err := m.Run()
