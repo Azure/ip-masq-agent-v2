@@ -28,6 +28,7 @@ import (
 
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/component-base/logs"
+	"k8s.io/component-base/version/verflag"
 	"k8s.io/klog/v2"
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 	utilexec "k8s.io/utils/exec"
@@ -143,6 +144,8 @@ func main() {
 
 	logs.InitLogs()
 	defer logs.FlushLogs()
+
+	verflag.PrintAndExitIfRequested()
 
 	m := NewMasqDaemon(c)
 	err := m.Run()
