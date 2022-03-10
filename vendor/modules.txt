@@ -1,43 +1,63 @@
-# github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680
-## explicit
-github.com/ghodss/yaml
-# github.com/godbus/dbus v0.0.0-20151105175453-c7fdd8b5cd55
-## explicit
-github.com/godbus/dbus
-# github.com/golang/glog v0.0.0-20141105023935-44145f04b68c
-## explicit
-github.com/golang/glog
-# github.com/spf13/pflag v0.0.0-20170130214245-9ff6c6923cff
-## explicit
-github.com/spf13/pflag
-# golang.org/x/sys v0.0.0-20180709060233-1b2967e3c290
-## explicit
+# github.com/go-logr/logr v1.2.0
+## explicit; go 1.16
+github.com/go-logr/logr
+# golang.org/x/sys v0.0.0-20210831042530-f4d43177bf5e
+## explicit; go 1.17
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
-# gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
-## explicit; go 1.11
-# gopkg.in/yaml.v2 v2.0.0-20150924142314-53feefa2559f
-## explicit
+# gopkg.in/yaml.v2 v2.4.0
+## explicit; go 1.15
 gopkg.in/yaml.v2
-# k8s.io/apimachinery v0.0.0-20170416202754-ce019b30a1f4
-## explicit
+# k8s.io/apimachinery v0.23.1 => k8s.io/apimachinery v0.23.0
+## explicit; go 1.16
 k8s.io/apimachinery/pkg/util/errors
+k8s.io/apimachinery/pkg/util/json
 k8s.io/apimachinery/pkg/util/runtime
 k8s.io/apimachinery/pkg/util/sets
+k8s.io/apimachinery/pkg/util/version
 k8s.io/apimachinery/pkg/util/wait
 k8s.io/apimachinery/pkg/util/yaml
-k8s.io/apimachinery/pkg/version
-# k8s.io/apiserver v0.0.0-20170417203629-48bf36441a1c
-## explicit
-k8s.io/apiserver/pkg/util/logs
-k8s.io/apiserver/pkg/util/trace
-# k8s.io/kubernetes v1.13.0-alpha.0.0.20180917200753-80fb2be3e42e
-## explicit
-k8s.io/kubernetes/pkg/util/dbus
+# k8s.io/klog/v2 v2.30.0
+## explicit; go 1.13
+k8s.io/klog/v2
+# k8s.io/kubernetes v1.23.0
+## explicit; go 1.16
 k8s.io/kubernetes/pkg/util/iptables
 k8s.io/kubernetes/pkg/util/iptables/testing
-k8s.io/kubernetes/pkg/util/version
-k8s.io/kubernetes/pkg/version
-k8s.io/kubernetes/pkg/version/verflag
-# k8s.io/utils v0.0.0-20180817171939-982821ea41da
-## explicit
+# k8s.io/utils v0.0.0-20211208161948-7d6a63dca704
+## explicit; go 1.12
+k8s.io/utils/clock
 k8s.io/utils/exec
+k8s.io/utils/trace
+# sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6
+## explicit; go 1.16
+sigs.k8s.io/json
+sigs.k8s.io/json/internal/golang/encoding/json
+# sigs.k8s.io/yaml v1.2.0
+## explicit; go 1.12
+sigs.k8s.io/yaml
+# k8s.io/api => k8s.io/api v0.23.0
+# k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.23.0
+# k8s.io/apimachinery => k8s.io/apimachinery v0.23.0
+# k8s.io/apiserver => k8s.io/apiserver v0.23.0
+# k8s.io/cli-runtime => k8s.io/cli-runtime v0.23.0
+# k8s.io/client-go => k8s.io/client-go v0.23.0
+# k8s.io/cloud-provider => k8s.io/cloud-provider v0.23.0
+# k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.23.0
+# k8s.io/code-generator => k8s.io/code-generator v0.23.0
+# k8s.io/component-base => k8s.io/component-base v0.23.0
+# k8s.io/component-helpers => k8s.io/component-helpers v0.23.0
+# k8s.io/controller-manager => k8s.io/controller-manager v0.23.0
+# k8s.io/cri-api => k8s.io/cri-api v0.23.0
+# k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.23.0
+# k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.23.0
+# k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.23.0
+# k8s.io/kube-proxy => k8s.io/kube-proxy v0.23.0
+# k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.23.0
+# k8s.io/kubectl => k8s.io/kubectl v0.23.0
+# k8s.io/kubelet => k8s.io/kubelet v0.23.0
+# k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.23.0
+# k8s.io/metrics => k8s.io/metrics v0.23.0
+# k8s.io/mount-utils => k8s.io/mount-utils v0.23.0
+# k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.23.0
+# k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.23.0
