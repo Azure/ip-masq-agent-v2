@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.0.2]
+
+* Update Kubernetes to v1.23.0 from v1.13.0-alpha by @mattstam in https://github.com/Azure/ip-masq-agent-v2/pull/31
+
+**Full Changelog**: https://github.com/Azure/ip-masq-agent-v2/commits/0.0.2
+
 ## [0.0.1]
 
 * Update README for v2 goals by @mattstam in https://github.com/Azure/ip-masq-agent-v2/pull/1
