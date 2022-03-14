@@ -1,12 +1,15 @@
 # Change Log
 
-## [v0.1.1]
+## [0.1.1]
 
 * Update Kubernetes to v1.23.0 from v1.13.0-alpha by @mattstam in https://github.com/Azure/ip-masq-agent-v2/pull/31
+* Migrate to semantic versioning by @mattstam in https://github.com/Azure/ip-masq-agent-v2/pull/32
+* Update publish action to support semantic versioning by @mattstam in https://github.com/Azure/ip-masq-agent-v2/pull/33
+* Remove version prefix in CHANGElOG by @mattstam in https://github.com/Azure/ip-masq-agent-v2/pull/34
 
 **Full Changelog**: https://github.com/Azure/ip-masq-agent-v2/commits/v0.1.1
 
-## [v0.1.0]
+## [0.1.0]
 
 * Update README for v2 goals by @mattstam in https://github.com/Azure/ip-masq-agent-v2/pull/1
 * Setup go modules by @mattstam in https://github.com/Azure/ip-masq-agent-v2/pull/5
