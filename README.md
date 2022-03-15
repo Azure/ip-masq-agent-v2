@@ -7,8 +7,9 @@
 
 Based on the original [ip-masq-agent](https://github.com/kubernetes-sigs/ip-masq-agent), v2 aims to solve more specific networking cases, allow for more configuration options, and improve observability. This includes:
 * Merging configuration from multiple sources
-* Support for health checking
-* Better detection of problematic and conflicting configurations
+* Detecting conflicting configurations
+* Fixing security vulnerabilities
+* Quickly crashing on errors
 
 ## Overview
 
@@ -33,7 +34,7 @@ Important: You should not attempt to run this agent in a cluster where the Kubel
 
 By default, the agent is configured to treat the three private IP ranges specified by [RFC 1918](https://tools.ietf.org/html/rfc1918) as non-masquerade CIDRs. These ranges are `10.0.0.0/8`, `172.16.0.0/12`, and `192.168.0.0/16`. To change this behavior, see the flags section below. The agent will also treat link-local (`169.254.0.0/16`) as a non-masquerade CIDR by default.
 
-By default, the agent is configured to reload its configuration from the `/etc/config/ip-masq-agent` file in its container every 60 seconds.
+By default, the agent is configured to reload its configuration from the `/etc/config/` directory in its container every 60 seconds.
 
 The agent configuration file should be written in yaml or json syntax, and may contain three optional keys:
 - `nonMasqueradeCIDRs []string`: A list strings in CIDR notation that specify the non-masquerade ranges.
@@ -55,7 +56,7 @@ Note that we created the `ConfigMap` in the same namespace as the DaemonSet Pods
 Tolerance of multiple `ConfigMaps` allows custom keys to be defined while avoiding conflicts of any `ConfigMaps` that will need to be reconciled dynamically. This repo also provides an example of what might be configured by a cloud provider:
 
 ```
-kubectl create configmap examples/config-cloud.yaml
+kubectl create configmap examples/config-reconciled.yaml
 ```
 
 The cloud provider may wish to reconcile a `ConfigMap` so that it can be in-sync with the subnet of the cluster.
@@ -63,16 +64,21 @@ The cloud provider may wish to reconcile a `ConfigMap` so that it can be in-sync
 
 ### Agent Flags
 
-The agent accepts two flags, which may be specified in the yaml file.
+The agent accepts multiple flags, which may be specified in the yaml file.
 
 `masq-chain`
-:  The name of the `iptables` chain to use. By default set to `IP-MASQ-AGENT`
+: The name of the `iptables` chain to use. Default set to `IP-MASQ-AGENT`.
 
 `nomasq-all-reserved-ranges`
-:  Whether or not to masquerade all RFC reserved ranges when the configmap is empty. The default is `false`. When `false`, the agent will masquerade to every destination except the ranges reserved by RFC 1918 (namely `10.0.0.0/8`, `172.16.0.0/12`, and `192.168.0.0/16`). When `true`, the agent will masquerade to every destination that is not marked reserved by an RFC. The full list of ranges is (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `100.64.0.0/10`, `192.0.0.0/24`, `192.0.2.0/24`, `192.88.99.0/24`, `198.18.0.0/15`, `198.51.100.0/24`, `203.0.113.0/24`, and `240.0.0.0/4`). Note however, that this list of ranges is overridden by specifying the nonMasqueradeCIDRs key in the agent configmap.
+: Whether or not to masquerade all RFC reserved ranges when the configmap is empty. The default is `false`. When `false`, the agent will masquerade to every destination except the ranges reserved by RFC 1918 (namely `10.0.0.0/8`, `172.16.0.0/12`, and `192.168.0.0/16`). When `true`, the agent will masquerade to every destination that is not marked reserved by an RFC. The full list of ranges is (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `100.64.0.0/10`, `192.0.0.0/24`, `192.0.2.0/24`, `192.88.99.0/24`, `198.18.0.0/15`, `198.51.100.0/24`, `203.0.113.0/24`, and `240.0.0.0/4`). Note however, that this list of ranges is overridden by specifying the nonMasqueradeCIDRs key in the agent configmap.
 
 `enable-ipv6`
-: Whether to configurate ip6tables rules. By default `enable-ipv6` is false. 
+: Whether to configure ip6tables rules. Default is `false`. 
+
+`resync-interval`
+: How often to refresh the config (in seconds). Default set to `60`.
+
+[klog](https://github.com/kubernetes/klog) also offers a range of flags that the agent inherits from (e.g. `--v` for log verbosity level).
 
 ## Rationale
 (from the [incubator proposal](https://gist.github.com/mtaufen/253309166e7d5aa9e9b560600a438447))
