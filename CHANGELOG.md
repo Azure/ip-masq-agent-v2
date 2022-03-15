@@ -2,7 +2,7 @@
 
 ## [0.1.2]
 
-* Update usage examples, README, and remove commit race from CHANGELOG
+* Update usage examples, README, and CHANGELOG formatting
 
 ## [0.1.1]
 
