@@ -63,8 +63,11 @@ endif
 ifeq ($(ARCH),ppc64le)
     BASEIMAGE?=k8s.gcr.io/build-image/debian-iptables-ppc64le:buster-v1.7.0
 endif
+ifeq ($(ARCH),s390x)
+	BASEIMAGE?=k8s.gcr.io/build-image/debian-iptables-s390x:buster-v1.7.0
+endif
 
-TAG := $(VERSION)
+TAG := $(VERSION)__$(OS)_$(ARCH)
 
 BUILD_IMAGE ?= golang:1.17-alpine
 
@@ -103,6 +106,12 @@ push-%:
 	    GOOS=$(firstword $(subst _, ,$*)) \
 	    GOARCH=$(lastword $(subst _, ,$*))
 
+manifest-%:
+	@$(MAKE) manifest                     \
+	    --no-print-directory              \
+	    GOOS=$(firstword $(subst _, ,$*)) \
+	    GOARCH=$(lastword $(subst _, ,$*))
+
 all-build: # @HELP builds binaries for all platforms
 all-build: $(addprefix build-, $(subst /,_, $(ALL_PLATFORMS)))
 
@@ -111,6 +120,9 @@ all-container: $(addprefix container-, $(subst /,_, $(ALL_PLATFORMS)))
 
 all-push: # @HELP pushes containers for all platforms to the defined registry
 all-push: $(addprefix push-, $(subst /,_, $(ALL_PLATFORMS)))
+
+all-manifest: # @HELP creates a docker manifest for all platforms (for multi-arch)
+all-manifest: $(addprefix manifest-, $(subst /,_, $(ALL_PLATFORMS)))
 
 # The following structure defeats Go's (intentional) behavior to always touch
 # result files, even if they have not changed.  This will still run `go` but
@@ -239,6 +251,15 @@ push: # @HELP pushes the container for one platform ($OS/$ARCH) to the defined r
 push: container
 	@for bin in $(BINS); do                    \
 	    docker push $(REGISTRY)/$$bin:$(TAG);  \
+	done
+	@echo
+
+manifest: # @HELP updates and pushes a manifest tag, which can contain multiple ($OS/$ARCH)
+manifest: push
+	@for bin in $(BINS); do              					\
+	    docker manifest create $(REGISTRY)/$$bin:$(VERSION) \
+	    --amend "$(REGISTRY)/$$bin:$(TAG)";			 		\
+	    docker manifest push $(REGISTRY)/$$bin:$(VERSION);  \
 	done
 	@echo
 
