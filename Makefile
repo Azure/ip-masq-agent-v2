@@ -19,7 +19,7 @@ BINS := ip-masq-agent-v2
 ALL_PLATFORMS := linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/s390x windows/amd64
 
 # Where to push the docker images.
-REGISTRY ?= mattstamcr.azurecr.io/testall/aks
+REGISTRY ?= gcr.io/k8s-staging-networking
 
 # This version-strategy uses git tags to set the version string
 VERSION ?= $(shell git describe --tags --always --dirty)
@@ -121,7 +121,7 @@ all-container: $(addprefix container-, $(subst /,_, $(ALL_PLATFORMS)))
 all-push: # @HELP pushes containers for all platforms to the defined registry
 all-push: $(addprefix push-, $(subst /,_, $(ALL_PLATFORMS)))
 
-all-manifest: # @HELP manifest
+all-manifest: # @HELP creates a docker manifest for all platforms (for multi-arch)
 all-manifest: $(addprefix manifest-, $(subst /,_, $(ALL_PLATFORMS)))
 
 # The following structure defeats Go's (intentional) behavior to always touch
@@ -254,22 +254,13 @@ push: container
 	done
 	@echo
 
-manifest: # @HELP manifest the container for one platform ($OS/$ARCH) to the defined registry
+manifest: # @HELP updates and pushes a manifest tag, which can contain multiple ($OS/$ARCH)
 manifest: push
-	@for bin in $(BINS); do              \
+	@for bin in $(BINS); do              					\
 	    docker manifest create $(REGISTRY)/$$bin:$(VERSION) \
-	    --amend "$(REGISTRY)/$$bin:$(TAG)"; \
+	    --amend "$(REGISTRY)/$$bin:$(TAG)";			 		\
 	    docker manifest push $(REGISTRY)/$$bin:$(VERSION);  \
 	done
-#	@echo $(BINS);
-#	@echo $(REGISTRY)/$(BINS):$(VERSION)
-#	for bin in $(BINS); do    						        \
-#  	    echo "container: $(REGISTRY)/$$bin:$(VERSION)"; 	\
-#	    docker manifest create $(REGISTRY)/$$bin:$(VERSION);\
-##	    --amend "$(REGISTRY)/$$bin:$(TAG)"; 				\
-#
-#	    docker manifest push $(REGISTRY)/$$bin:$(VERSION)
-#	done
 	@echo
 
 version: # @HELP outputs the version string
