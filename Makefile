@@ -19,7 +19,7 @@ BINS := ip-masq-agent-v2
 ALL_PLATFORMS := linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/s390x windows/amd64
 
 # Where to push the docker images.
-REGISTRY ?= gcr.io/k8s-staging-networking
+REGISTRY ?= mattstamcr.azurecr.io/testall/aks
 
 # This version-strategy uses git tags to set the version string
 VERSION ?= $(shell git describe --tags --always --dirty)
@@ -63,8 +63,11 @@ endif
 ifeq ($(ARCH),ppc64le)
     BASEIMAGE?=k8s.gcr.io/build-image/debian-iptables-ppc64le:buster-v1.7.0
 endif
+ifeq ($(ARCH),s390x)
+	BASEIMAGE?=k8s.gcr.io/build-image/debian-iptables-s390x:buster-v1.7.0
+endif
 
-TAG := $(VERSION)
+TAG := $(VERSION)__$(OS)_$(ARCH)
 
 BUILD_IMAGE ?= golang:1.17-alpine
 
@@ -103,6 +106,12 @@ push-%:
 	    GOOS=$(firstword $(subst _, ,$*)) \
 	    GOARCH=$(lastword $(subst _, ,$*))
 
+manifest-%:
+	@$(MAKE) manifest                     \
+	    --no-print-directory              \
+	    GOOS=$(firstword $(subst _, ,$*)) \
+	    GOARCH=$(lastword $(subst _, ,$*))
+
 all-build: # @HELP builds binaries for all platforms
 all-build: $(addprefix build-, $(subst /,_, $(ALL_PLATFORMS)))
 
@@ -111,6 +120,9 @@ all-container: $(addprefix container-, $(subst /,_, $(ALL_PLATFORMS)))
 
 all-push: # @HELP pushes containers for all platforms to the defined registry
 all-push: $(addprefix push-, $(subst /,_, $(ALL_PLATFORMS)))
+
+all-manifest: # @HELP manifest
+all-manifest: $(addprefix manifest-, $(subst /,_, $(ALL_PLATFORMS)))
 
 # The following structure defeats Go's (intentional) behavior to always touch
 # result files, even if they have not changed.  This will still run `go` but
@@ -240,6 +252,24 @@ push: container
 	@for bin in $(BINS); do                    \
 	    docker push $(REGISTRY)/$$bin:$(TAG);  \
 	done
+	@echo
+
+manifest: # @HELP manifest the container for one platform ($OS/$ARCH) to the defined registry
+manifest: push
+	@for bin in $(BINS); do              \
+	    docker manifest create $(REGISTRY)/$$bin:$(VERSION) \
+	    --amend "$(REGISTRY)/$$bin:$(TAG)"; \
+	    docker manifest push $(REGISTRY)/$$bin:$(VERSION);  \
+	done
+#	@echo $(BINS);
+#	@echo $(REGISTRY)/$(BINS):$(VERSION)
+#	for bin in $(BINS); do    						        \
+#  	    echo "container: $(REGISTRY)/$$bin:$(VERSION)"; 	\
+#	    docker manifest create $(REGISTRY)/$$bin:$(VERSION);\
+##	    --amend "$(REGISTRY)/$$bin:$(TAG)"; 				\
+#
+#	    docker manifest push $(REGISTRY)/$$bin:$(VERSION)
+#	done
 	@echo
 
 version: # @HELP outputs the version string

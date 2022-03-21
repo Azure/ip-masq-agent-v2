@@ -3,6 +3,7 @@
 ## [0.1.2]
 
 * Update usage examples, README, and CHANGELOG formatting
+* Add CI for multi-arch builds
 
 ## [0.1.1]
 
