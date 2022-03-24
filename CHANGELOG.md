@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.3]
+
+* Remove /vendor from VCS
+
 ## [0.1.2]
 
 * Update usage examples, README, and CHANGELOG formatting
