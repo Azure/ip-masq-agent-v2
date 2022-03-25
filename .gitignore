@@ -4,6 +4,9 @@
 /.container-*
 /.dockerfile-*
 
+# Go Vendor
+/vendor
+
 # Emacs save files
 *~
 \#*\#
