@@ -3,6 +3,7 @@
 ## [0.1.3]
 
 * Remove /vendor from VCS
+* Initialize logging flags
 
 ## [0.1.2]
 

@@ -137,6 +137,8 @@ func NewMasqDaemon(c *MasqConfig) *MasqDaemon {
 }
 
 func main() {
+	klog.InitFlags(nil)
+
 	flag.Parse()
 	masqChain = utiliptables.Chain(*masqChainFlag)
 
