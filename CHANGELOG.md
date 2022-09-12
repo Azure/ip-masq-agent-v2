@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.4]
+
+* Switch base image to distroless-iptables
+
 ## [0.1.3]
 
 * Remove /vendor from VCS
