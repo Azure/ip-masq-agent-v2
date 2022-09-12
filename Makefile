@@ -50,22 +50,9 @@ ifeq ($(INTERACTIVE), 1)
     TTY=t
 endif
 
-# Set default base image dynamically for each arch
-ifeq ($(ARCH),amd64)
-    BASEIMAGE?=k8s.gcr.io/build-image/debian-iptables-amd64:buster-v1.7.0
-endif
-ifeq ($(ARCH),arm)
-    BASEIMAGE?=k8s.gcr.io/build-image/debian-iptables-arm:buster-v1.7.0
-endif
-ifeq ($(ARCH),arm64)
-    BASEIMAGE?=k8s.gcr.io/build-image/debian-iptables-arm64:buster-v1.7.0
-endif
-ifeq ($(ARCH),ppc64le)
-    BASEIMAGE?=k8s.gcr.io/build-image/debian-iptables-ppc64le:buster-v1.7.0
-endif
-ifeq ($(ARCH),s390x)
-	BASEIMAGE?=k8s.gcr.io/build-image/debian-iptables-s390x:buster-v1.7.0
-endif
+# Use a distroless multi-arch base image, based on debian-iptables:
+# https://github.com/kubernetes/kubernetes/issues/109406#issuecomment-1195957805
+BASEIMAGE ?= k8s.gcr.io/build-image/distroless-iptables:v0.1.1
 
 TAG := $(VERSION)__$(OS)_$(ARCH)
 
