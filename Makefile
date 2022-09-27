@@ -50,9 +50,23 @@ ifeq ($(INTERACTIVE), 1)
     TTY=t
 endif
 
-# Use a distroless multi-arch base image, based on debian-iptables:
-# https://github.com/kubernetes/kubernetes/issues/109406#issuecomment-1195957805
-BASEIMAGE ?= k8s.gcr.io/build-image/distroless-iptables:v0.1.1
+# Use a distroless base image, based on debian-iptables: https://github.com/kubernetes/release/tree/master/images/build/distroless-iptables
+# which is avaliable at the AKS Base Image CR 'baseosscr.azurecr.io', then set default base image dynamically for each arch
+ifeq ($(ARCH),amd64)
+    BASEIMAGE ?= baseosscr.azurecr.io/build-image/distroless-iptables-amd64:v0.1.2
+endif
+ifeq ($(ARCH),arm)
+    BASEIMAGE ?= baseosscr.azurecr.io/build-image/distroless-iptables-arm:v0.1.2
+endif
+ifeq ($(ARCH),arm64)
+    BASEIMAGE ?= baseosscr.azurecr.io/build-image/distroless-iptables-arm64:v0.1.2
+endif
+ifeq ($(ARCH),ppc64le)
+    BASEIMAGE ?= baseosscr.azurecr.io/build-image/distroless-iptables-ppc64le:v0.1.2
+endif
+ifeq ($(ARCH),s390x)
+    BASEIMAGE ?= baseosscr.azurecr.io/build-image/distroless-iptables-s390x:v0.1.2
+endif
 
 TAG := $(VERSION)__$(OS)_$(ARCH)
 
