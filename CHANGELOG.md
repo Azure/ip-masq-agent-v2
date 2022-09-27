@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.5]
+
+* Dynamically update base image to specific architecture
+
 ## [0.1.4]
 
 * Switch base image to distroless-iptables
