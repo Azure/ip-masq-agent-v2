@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.1.6]
+
+* Bump golang.org/x/text from 0.3.7 to 0.3.8
+* Bump golang.org/x/net from 0.0.0-20220225172249-27dd8689420f to 0.7.0
+* Update k8s.io/kubernetes to v1.23.17
+
 ## [0.1.5]
 
 * Dynamically update base image to specific architecture
