@@ -6,7 +6,7 @@ require (
 	k8s.io/apimachinery v0.23.4
 	k8s.io/component-base v0.23.4
 	k8s.io/klog/v2 v2.40.1
-	k8s.io/kubernetes v1.23.0
+	k8s.io/kubernetes v1.23.17
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
 )
 
@@ -27,7 +27,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
