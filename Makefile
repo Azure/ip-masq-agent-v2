@@ -240,8 +240,9 @@ push: container
 manifest: # @HELP updates and pushes a manifest tag, which can contain multiple ($OS/$ARCH)
 manifest: push
 	@for bin in $(BINS); do              					\
-	    docker manifest create $(REGISTRY)/$$bin:$(VERSION) \
-	    --amend "$(REGISTRY)/$$bin:$(TAG)";			 		\
+	    echo "skip!" \
+	    #docker manifest create $(REGISTRY)/$$bin:$(VERSION) \
+	    #--amend "$(REGISTRY)/$$bin:$(TAG)";			 		\
 	    #docker manifest push $(REGISTRY)/$$bin:$(VERSION);  \
 	done
 	@echo
