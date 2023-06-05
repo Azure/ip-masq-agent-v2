@@ -232,7 +232,8 @@ $(CONTAINER_DOTFILES):
 push: # @HELP pushes the container for one platform ($OS/$ARCH) to the defined registry
 push: container
 	@for bin in $(BINS); do                    \
-	    docker push $(REGISTRY)/$$bin:$(TAG);  \
+	    echo "skip!" \
+	    #docker push $(REGISTRY)/$$bin:$(TAG);  \
 	done
 	@echo
 
@@ -241,7 +242,7 @@ manifest: push
 	@for bin in $(BINS); do              					\
 	    docker manifest create $(REGISTRY)/$$bin:$(VERSION) \
 	    --amend "$(REGISTRY)/$$bin:$(TAG)";			 		\
-	    docker manifest push $(REGISTRY)/$$bin:$(VERSION);  \
+	    #docker manifest push $(REGISTRY)/$$bin:$(VERSION);  \
 	done
 	@echo
 
