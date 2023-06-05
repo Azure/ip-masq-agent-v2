@@ -16,7 +16,7 @@
 BINS := ip-masq-agent-v2
 
 # The platforms we support.
-ALL_PLATFORMS := linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/s390x windows/amd64
+ALL_PLATFORMS := linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/s390x
 
 # Where to push the docker images.
 REGISTRY ?= gcr.io/k8s-staging-networking
@@ -51,31 +51,11 @@ ifeq ($(INTERACTIVE), 1)
 endif
 
 # Use a distroless base image, based on debian-iptables: https://github.com/kubernetes/release/tree/master/images/build/distroless-iptables
-# which is avaliable at the AKS Base Image CR 'baseosscr.azurecr.io', then set default base image dynamically for each arch
-ifeq ($(ARCH),amd64)
-    BASEIMAGE ?= baseosscr.azurecr.io/build-image/distroless-iptables-amd64:v0.1.2
-endif
-ifeq ($(ARCH),arm)
-    BASEIMAGE ?= baseosscr.azurecr.io/build-image/distroless-iptables-arm:v0.1.2
-endif
-ifeq ($(ARCH),arm64)
-    BASEIMAGE ?= baseosscr.azurecr.io/build-image/distroless-iptables-arm64:v0.1.2
-endif
-ifeq ($(ARCH),ppc64le)
-    BASEIMAGE ?= baseosscr.azurecr.io/build-image/distroless-iptables-ppc64le:v0.1.2
-endif
-ifeq ($(ARCH),s390x)
-    BASEIMAGE ?= baseosscr.azurecr.io/build-image/distroless-iptables-s390x:v0.1.2
-endif
+BASE_IMAGE ?= registry.k8s.io/build-image/distroless-iptables:v0.2.4
 
 TAG := $(VERSION)__$(OS)_$(ARCH)
 
-BUILD_IMAGE ?= golang:1.17-alpine
-
-BIN_EXTENSION :=
-ifeq ($(OS), windows)
-  BIN_EXTENSION := .exe
-endif
+BUILD_IMAGE ?= golang:1.20-alpine
 
 # It's necessary to set this because some environments don't link sh -> bash.
 SHELL := /usr/bin/env bash
@@ -238,11 +218,12 @@ $(CONTAINER_DOTFILES):
 	    -e 's|{ARG_BIN}|$(BIN)$(BIN_EXTENSION)|g' \
 	    -e 's|{ARG_ARCH}|$(ARCH)|g'               \
 	    -e 's|{ARG_OS}|$(OS)|g'                   \
-	    -e 's|{ARG_FROM}|$(BASEIMAGE)|g'          \
+	    -e 's|{ARG_FROM}|$(BASE_IMAGE)|g'          \
 	    Dockerfile.in > .dockerfile-$(BIN)-$(OS)_$(ARCH)
 	@docker build                           \
 	    --no-cache                          \
 	    -t $(REGISTRY)/$(BIN):$(TAG)        \
+	    --platform "$(OS)/$(ARCH)"          \
 	    -f .dockerfile-$(BIN)-$(OS)_$(ARCH) \
 	    .
 	@docker images -q $(REGISTRY)/$(BIN):$(TAG) > $@

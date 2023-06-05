@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.1.7]
+
+* Use go 1.20 builder image
+* Use base image registry.k8s.io/build-image/distroless-iptables:v0.2.4
+
 ## [0.1.6]
 
 * Bump golang.org/x/text from 0.3.7 to 0.3.8
