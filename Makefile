@@ -43,6 +43,11 @@ ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 # Ensure that the docker command line supports the manifest images
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
+# Buildkit must be enabled to support multi-platform builds.
+# This is enabled by default in docker version 23.0 and later.
+# https://docs.docker.com/build/buildkit/
+export DOCKER_BUILDKIT=1
+
 # docker interactive console
 INTERACTIVE := $(shell [ -t 0 ] && echo 1 || echo 0)
 TTY=
