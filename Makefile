@@ -42,6 +42,7 @@ ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
 # Ensure that the docker command line supports the manifest images
 export DOCKER_CLI_EXPERIMENTAL=enabled
+export DOCKER_BUILDKIT=1
 
 # docker interactive console
 INTERACTIVE := $(shell [ -t 0 ] && echo 1 || echo 0)
@@ -220,7 +221,7 @@ $(CONTAINER_DOTFILES):
 	    -e 's|{ARG_OS}|$(OS)|g'                   \
 	    -e 's|{ARG_FROM}|$(BASE_IMAGE)|g'          \
 	    Dockerfile.in > .dockerfile-$(BIN)-$(OS)_$(ARCH)
-	DOCKER_BUILDKIT=1 @docker build         \
+	@docker build         \
 	    --no-cache                          \
 	    -t $(REGISTRY)/$(BIN):$(TAG)        \
 	    --platform "$(OS)/$(ARCH)"          \
