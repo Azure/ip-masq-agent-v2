@@ -220,7 +220,7 @@ $(CONTAINER_DOTFILES):
 	    -e 's|{ARG_OS}|$(OS)|g'                   \
 	    -e 's|{ARG_FROM}|$(BASE_IMAGE)|g'          \
 	    Dockerfile.in > .dockerfile-$(BIN)-$(OS)_$(ARCH)
-	@docker build                           \
+	DOCKER_BUILDKIT=1 @docker build         \
 	    --no-cache                          \
 	    -t $(REGISTRY)/$(BIN):$(TAG)        \
 	    --platform "$(OS)/$(ARCH)"          \
