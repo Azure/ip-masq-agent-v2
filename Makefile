@@ -19,7 +19,7 @@ BINS := ip-masq-agent-v2
 ALL_PLATFORMS := linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/s390x
 
 # Where to push the docker images.
-REGISTRY ?=  gcr.io/k8s-staging-networking
+REGISTRY ?= gcr.io/k8s-staging-networking
 
 # This version-strategy uses git tags to set the version string
 VERSION ?= $(shell git describe --tags --always --dirty)
@@ -168,7 +168,6 @@ go-build: | $(BUILD_DIRS)
 	    -v $$(pwd)/.go/pkg:/go/pkg                              \
 	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
-	    --network host                                          \
 	    $(BUILD_IMAGE)                                          \
         /bin/sh -c "                                            \
 	        ARCH=$(ARCH)                                        \
