@@ -35,7 +35,6 @@ export GOARCH="${ARCH}"
 export GOOS="${OS}"
 export GO111MODULE=on
 export GOFLAGS="${GOFLAGS:-} -mod=${MOD}"
-export GOPROXY="https://proxy.golang.com.cn,direct"
 
 
 go install                                                      \
