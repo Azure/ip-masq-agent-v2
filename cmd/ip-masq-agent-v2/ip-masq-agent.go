@@ -58,9 +58,10 @@ var (
 
 // MasqConfig object
 type MasqConfig struct {
-	NonMasqueradeCIDRs []string `json:"nonMasqueradeCIDRs"`
-	MasqLinkLocal      bool     `json:"masqLinkLocal"`
-	MasqLinkLocalIPv6  bool     `json:"masqLinkLocalIPv6"`
+	NonMasqueradeCIDRs    []string `json:"nonMasqueradeCIDRs"`
+	NonMasqueradeSRCCIDRs []string `json:"nonMasqueradeSRCCIDRs"`
+	MasqLinkLocal         bool     `json:"masqLinkLocal"`
+	MasqLinkLocalIPv6     bool     `json:"masqLinkLocalIPv6"`
 }
 
 // Duration - Go's JSON unmarshaler can't handle time.ParseDuration syntax when unmarshaling into time.Duration, so we do it here
@@ -84,9 +85,10 @@ func (d *Duration) UnmarshalJSON(json []byte) error {
 // EmptyMasqConfig returns a MasqConfig with empty values
 func EmptyMasqConfig() *MasqConfig {
 	return &MasqConfig{
-		NonMasqueradeCIDRs: make([]string, 0),
-		MasqLinkLocal:      false,
-		MasqLinkLocalIPv6:  false,
+		NonMasqueradeCIDRs:    make([]string, 0),
+		NonMasqueradeSRCCIDRs: make([]string, 0),
+		MasqLinkLocal:         false,
+		MasqLinkLocalIPv6:     false,
 	}
 }
 
@@ -94,6 +96,7 @@ func EmptyMasqConfig() *MasqConfig {
 func DefaultMasqConfig() *MasqConfig {
 	// RFC 1918 defines the private ip address space as 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
 	nonMasq := []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"}
+	nonMasqSRC := []string{}
 
 	if *noMasqueradeAllReservedRangesFlag {
 		nonMasq = append(nonMasq,
@@ -108,9 +111,10 @@ func DefaultMasqConfig() *MasqConfig {
 	}
 
 	return &MasqConfig{
-		NonMasqueradeCIDRs: nonMasq,
-		MasqLinkLocal:      false,
-		MasqLinkLocalIPv6:  false,
+		NonMasqueradeCIDRs:    nonMasq,
+		NonMasqueradeSRCCIDRs: nonMasqSRC,
+		MasqLinkLocal:         false,
+		MasqLinkLocalIPv6:     false,
 	}
 }
 
@@ -230,6 +234,12 @@ func (m *MasqDaemon) syncConfig(fs fakefs.FileSystem) error {
 				return fmt.Errorf("config file %q is invalid: %w", file.Name(), err)
 			}
 
+			err = newConfig.validate_src()
+			if err != nil {
+				return fmt.Errorf("config file %q is invalid: %w", file.Name(), err)
+			}
+
+			c.mergesrc(&newConfig)
 			c.merge(&newConfig)
 
 			configAdded = true
@@ -268,6 +278,26 @@ func (c *MasqConfig) validate() error {
 	return nil
 }
 
+func (c *MasqConfig) validate_src() error {
+	// limit to 64 CIDRs (excluding link-local) to protect against really bad mistakes
+	n := len(c.NonMasqueradeSRCCIDRs)
+	if n > 64 {
+		return fmt.Errorf("the daemon can only accept up to 64 CIDRs (excluding link-local), but got %d CIDRs (excluding link local)", n)
+	}
+	// check CIDRs are valid
+	for _, cidr := range c.NonMasqueradeSRCCIDRs {
+		err := validateCIDR(cidr)
+		if err != nil {
+			return err
+		}
+		// can't configure ipv6 cidr if ipv6 is not enabled
+		if !*enableIPv6 && isIPv6CIDR(cidr) {
+			return fmt.Errorf("ipv6 is not enabled, but ipv6 cidr %s provided. Enable ipv6 using --enable-ipv6 agent flag", cidr)
+		}
+	}
+	return nil
+}
+
 // merge combines the existing MasqConfig with newConfig. The bools are OR'd together.
 func (c *MasqConfig) merge(newConfig *MasqConfig) {
 	if newConfig.NonMasqueradeCIDRs != nil && len(newConfig.NonMasqueradeCIDRs) > 0 {
@@ -276,6 +306,12 @@ func (c *MasqConfig) merge(newConfig *MasqConfig) {
 
 	c.MasqLinkLocal = c.MasqLinkLocal || newConfig.MasqLinkLocal
 	c.MasqLinkLocalIPv6 = c.MasqLinkLocalIPv6 || newConfig.MasqLinkLocalIPv6
+}
+
+func (c *MasqConfig) mergesrc(newConfig *MasqConfig) {
+	if newConfig.NonMasqueradeSRCCIDRs != nil && len(newConfig.NonMasqueradeSRCCIDRs) > 0 {
+		c.NonMasqueradeSRCCIDRs = mergeCIDRs(c.NonMasqueradeSRCCIDRs, newConfig.NonMasqueradeSRCCIDRs)
+	}
 }
 
 // mergeCIDRS merges two slices of CIDRs into one, ignoring duplicates
@@ -335,6 +371,12 @@ func (m *MasqDaemon) syncMasqRules() error {
 	// link-local CIDR is always non-masquerade
 	if !m.config.MasqLinkLocal {
 		writeNonMasqRule(lines, linkLocalCIDR)
+	}
+	// non-masquerade for user-provided CIDRs
+	for _, cidr := range m.config.NonMasqueradeSRCCIDRs {
+		if !isIPv6CIDR(cidr) {
+			writeNonMasqSRCRule(lines, cidr)
+		}
 	}
 
 	// non-masquerade for user-provided CIDRs
@@ -431,6 +473,10 @@ const nonMasqRuleComment = `-m comment --comment "ip-masq-agent: local traffic i
 
 func writeNonMasqRule(lines *bytes.Buffer, cidr string) {
 	writeRule(lines, utiliptables.Append, masqChain, nonMasqRuleComment, "-d", cidr, "-j", "RETURN")
+}
+
+func writeNonMasqSRCRule(lines *bytes.Buffer, cidr string) {
+	writeRule(lines, utiliptables.Append, masqChain, nonMasqRuleComment, "-s", cidr, "-j", "RETURN")
 }
 
 const masqRuleComment = `-m comment --comment "ip-masq-agent: outbound traffic is subject to MASQUERADE (must be last in chain)"`
