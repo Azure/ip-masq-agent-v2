@@ -168,7 +168,6 @@ go-build: | $(BUILD_DIRS)
 	    -v $$(pwd)/.go/pkg:/go/pkg                              \
 	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
-	    --env GOPROXY="https://proxy.golang.com.cn,direct"                        \
 	    --network host                                          \
 	    $(BUILD_IMAGE)                                          \
         /bin/sh -c "                                            \
