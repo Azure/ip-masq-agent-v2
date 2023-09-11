@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.8]
+
+* Use base image registry.k8s.io/build-image/distroless-iptables:v0.3.2
+
 ## [0.1.7]
 
 * Use go 1.20 builder image
