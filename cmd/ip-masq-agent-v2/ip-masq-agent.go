@@ -403,8 +403,10 @@ func (m *MasqDaemon) syncMasqRulesIPv6() error {
 // Feel free to dig around in iptables and see if you can figure out exactly why; I haven't had time to fully trace how it parses and handle subcommands.
 // If you want to investigate, get the source via `git clone git://git.netfilter.org/iptables.git`, `git checkout v1.4.21` (the version I've seen this issue on,
 // though it may also happen on others), and start with `git grep XT_EXTENSION_MAXNAMELEN`.
+const postRoutingMasqChainCommentFormat = `"ip-masq-agent: ensure nat POSTROUTING directs all non-LOCAL destination traffic to our custom %s chain"`
+
 func postroutingJumpComment() string {
-	return fmt.Sprintf("ip-masq-agent: ensure nat POSTROUTING directs all non-LOCAL destination traffic to our custom %s chain", masqChain)
+	return fmt.Sprintf(postRoutingMasqChainCommentFormat, masqChain)
 }
 
 func (m *MasqDaemon) ensurePostroutingJump() error {
