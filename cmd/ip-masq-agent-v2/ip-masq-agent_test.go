@@ -33,16 +33,39 @@ import (
 // turn off glog logging during tests to avoid clutter in output
 func TestMain(m *testing.M) {
 	_ = flag.Set("logtostderr", "false")
+	_ = flag.Set("masq-chain", "IP-MASQ-AGENT")
 	ec := m.Run()
 	os.Exit(ec)
 }
 
 // returns a MasqDaemon with empty config values and a fake iptables interface
 func NewFakeMasqDaemon() *MasqDaemon {
+	iptables := iptest.NewFake()
+	iptables.Dump = &iptest.IPTablesDump{
+		Tables: []iptest.Table{
+			{
+				Name: utiliptables.TableNAT,
+				Chains: []iptest.Chain{
+					{Name: utiliptables.ChainPostrouting},
+				},
+			},
+		},
+	}
+	ip6tables := iptest.NewIPv6Fake()
+	ip6tables.Dump = &iptest.IPTablesDump{
+		Tables: []iptest.Table{
+			{
+				Name: utiliptables.TableNAT,
+				Chains: []iptest.Chain{
+					{Name: utiliptables.ChainPostrouting},
+				},
+			},
+		},
+	}
 	return &MasqDaemon{
 		config:    &MasqConfig{},
-		iptables:  iptest.NewFake(),
-		ip6tables: iptest.NewFake(),
+		iptables:  iptables,
+		ip6tables: ip6tables,
 	}
 }
 
@@ -398,6 +421,7 @@ func TestSyncConfig(t *testing.T) {
 
 // tests MasqDaemon.syncMasqRules
 func TestSyncMasqRules(t *testing.T) {
+	masqChain = utiliptables.Chain("IP-MASQ-AGENT")
 	var syncMasqRulesTests = []struct {
 		desc string      // human readable description of the test
 		cfg  *MasqConfig // Masq configuration to use
@@ -408,7 +432,10 @@ func TestSyncMasqRules(t *testing.T) {
 			desc: "empty config",
 			cfg:  &MasqConfig{},
 			want: `*nat
+:` + string(utiliptables.ChainPostrouting) + ` - [0:0]
 :` + string(masqChain) + ` - [0:0]
+-A ` + string(utiliptables.ChainPostrouting) + ` -m comment --comment ` +
+				fmt.Sprintf(postRoutingMasqChainCommentFormat, masqChain) + ` -m addrtype ! --dst-type LOCAL -j ` + string(masqChain) + `
 -A ` + string(masqChain) + ` ` + nonMasqRuleComment + ` -d 169.254.0.0/16 -j RETURN
 -A ` + string(masqChain) + ` ` + masqRuleComment + ` -j MASQUERADE
 COMMIT
@@ -418,7 +445,10 @@ COMMIT
 			desc: "default config masquerading reserved ranges",
 			cfg:  NewMasqConfigNoReservedRanges(),
 			want: `*nat
+:` + string(utiliptables.ChainPostrouting) + ` - [0:0]
 :` + string(masqChain) + ` - [0:0]
+-A ` + string(utiliptables.ChainPostrouting) + ` -m comment --comment ` +
+				fmt.Sprintf(postRoutingMasqChainCommentFormat, masqChain) + ` -m addrtype ! --dst-type LOCAL -j ` + string(masqChain) + `
 -A ` + string(masqChain) + ` ` + nonMasqRuleComment + ` -d 169.254.0.0/16 -j RETURN
 -A ` + string(masqChain) + ` ` + nonMasqRuleComment + ` -d 10.0.0.0/8 -j RETURN
 -A ` + string(masqChain) + ` ` + nonMasqRuleComment + ` -d 172.16.0.0/12 -j RETURN
@@ -431,7 +461,10 @@ COMMIT
 			desc: "default config not masquerading reserved ranges",
 			cfg:  NewMasqConfigWithReservedRanges(),
 			want: `*nat
+:` + string(utiliptables.ChainPostrouting) + ` - [0:0]
 :` + string(masqChain) + ` - [0:0]
+-A ` + string(utiliptables.ChainPostrouting) + ` -m comment --comment ` +
+				fmt.Sprintf(postRoutingMasqChainCommentFormat, masqChain) + ` -m addrtype ! --dst-type LOCAL -j ` + string(masqChain) + `
 -A ` + string(masqChain) + ` ` + nonMasqRuleComment + ` -d 169.254.0.0/16 -j RETURN
 -A ` + string(masqChain) + ` ` + nonMasqRuleComment + ` -d 10.0.0.0/8 -j RETURN
 -A ` + string(masqChain) + ` ` + nonMasqRuleComment + ` -d 172.16.0.0/12 -j RETURN
@@ -457,7 +490,10 @@ COMMIT
 				},
 			},
 			want: `*nat
+:` + string(utiliptables.ChainPostrouting) + ` - [0:0]
 :` + string(masqChain) + ` - [0:0]
+-A ` + string(utiliptables.ChainPostrouting) + ` -m comment --comment ` +
+				fmt.Sprintf(postRoutingMasqChainCommentFormat, masqChain) + ` -m addrtype ! --dst-type LOCAL -j ` + string(masqChain) + `
 -A ` + string(masqChain) + ` ` + nonMasqRuleComment + ` -d 169.254.0.0/16 -j RETURN
 -A ` + string(masqChain) + ` ` + nonMasqRuleComment + ` -d 10.244.0.0/16 -j RETURN
 -A ` + string(masqChain) + ` ` + masqRuleComment + ` -j MASQUERADE
@@ -478,8 +514,12 @@ COMMIT
 			if !ok {
 				t.Errorf("MasqDaemon wasn't using the expected iptables mock")
 			}
-			if string(fipt.Lines) != tt.want {
-				t.Errorf("syncMasqRules wrote %q, want %q", string(fipt.Lines), tt.want)
+			buf := bytes.NewBuffer(nil)
+			if err := fipt.SaveInto("nat", buf); err != nil {
+				t.Errorf("fake iptables SaveInto failed, error: %s", err)
+			}
+			if buf.String() != string(tt.want) {
+				t.Errorf("syncMasqRules wrote %q, want %q", buf.String(), tt.want)
 			}
 		})
 	}
@@ -497,7 +537,10 @@ func TestSyncMasqRulesIPv6(t *testing.T) {
 			desc: "empty config",
 			cfg:  &MasqConfig{},
 			want: `*nat
+:` + string(utiliptables.ChainPostrouting) + ` - [0:0]
 :` + string(masqChain) + ` - [0:0]
+-A ` + string(utiliptables.ChainPostrouting) + ` -m comment --comment ` +
+				fmt.Sprintf(postRoutingMasqChainCommentFormat, masqChain) + ` -m addrtype ! --dst-type LOCAL -j ` + string(masqChain) + `
 -A ` + string(masqChain) + ` ` + nonMasqRuleComment + ` -d fe80::/10 -j RETURN
 -A ` + string(masqChain) + ` ` + masqRuleComment + ` -j MASQUERADE
 COMMIT
@@ -512,7 +555,10 @@ COMMIT
 				},
 			},
 			want: `*nat
+:` + string(utiliptables.ChainPostrouting) + ` - [0:0]
 :` + string(masqChain) + ` - [0:0]
+-A ` + string(utiliptables.ChainPostrouting) + ` -m comment --comment ` +
+				fmt.Sprintf(postRoutingMasqChainCommentFormat, masqChain) + ` -m addrtype ! --dst-type LOCAL -j ` + string(masqChain) + `
 -A ` + string(masqChain) + ` ` + nonMasqRuleComment + ` -d fe80::/10 -j RETURN
 -A ` + string(masqChain) + ` ` + nonMasqRuleComment + ` -d fc00::/7 -j RETURN
 -A ` + string(masqChain) + ` ` + masqRuleComment + ` -j MASQUERADE
@@ -523,7 +569,10 @@ COMMIT
 			desc: "config has masqLinkLocalIPv6: true",
 			cfg:  &MasqConfig{MasqLinkLocalIPv6: true},
 			want: `*nat
+:` + string(utiliptables.ChainPostrouting) + ` - [0:0]
 :` + string(masqChain) + ` - [0:0]
+-A ` + string(utiliptables.ChainPostrouting) + ` -m comment --comment ` +
+				fmt.Sprintf(postRoutingMasqChainCommentFormat, masqChain) + ` -m addrtype ! --dst-type LOCAL -j ` + string(masqChain) + `
 -A ` + string(masqChain) + ` ` + masqRuleComment + ` -j MASQUERADE
 COMMIT
 `,
@@ -543,8 +592,12 @@ COMMIT
 			if !ok {
 				t.Errorf("MasqDaemon wasn't using the expected iptables mock")
 			}
-			if string(fipt6.Lines) != tt.want {
-				t.Errorf("syncMasqRulesIPv6 wrote %q, want %q", string(fipt6.Lines), tt.want)
+			buf := bytes.NewBuffer(nil)
+			if err := fipt6.SaveInto("nat", buf); err != nil {
+				t.Errorf("fake iptables SaveInto failed, error: %s", err)
+			}
+			if buf.String() != tt.want {
+				t.Errorf("syncMasqRulesIPv6 wrote %q, want %q", buf.String(), tt.want)
 			}
 		})
 	}
