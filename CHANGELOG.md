@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.1.9]
+
+* Use base image registry.k8s.io/build-image/distroless-iptables:v0.4.2
+* Update k8s.io/kubernetes to v1.27.8
+* Specify go 1.20 in go.mod
+
 ## [0.1.8]
 
 * Use base image registry.k8s.io/build-image/distroless-iptables:v0.3.2
