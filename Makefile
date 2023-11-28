@@ -56,7 +56,7 @@ ifeq ($(INTERACTIVE), 1)
 endif
 
 # Use a distroless base image, based on debian-iptables: https://github.com/kubernetes/release/tree/master/images/build/distroless-iptables
-BASE_IMAGE ?= registry.k8s.io/build-image/distroless-iptables:v0.3.2
+BASE_IMAGE ?= registry.k8s.io/build-image/distroless-iptables:v0.4.2
 
 TAG := $(VERSION)__$(OS)_$(ARCH)
 
