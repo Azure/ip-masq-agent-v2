@@ -1,8 +1,5 @@
 name: Building and pushing mcr
-on:
-  push:
-    tags:
-      - "v*"
+on: [workflow_dispatch]
 
 permissions:
       id-token: write
