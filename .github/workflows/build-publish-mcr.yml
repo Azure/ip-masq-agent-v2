@@ -54,4 +54,4 @@ jobs:
           az acr login -n ${{ secrets.AZURE_REGISTRY_SERVER }}
 
           echo "Pushing to ACR"
-          REGISTRY=${{ secrets.AZURE_REGISTRY_SERVER }}/public/aks VERSION="${{ github.ref_name }}" make all-manifest
+          REGISTRY=${{ secrets.AZURE_REGISTRY_SERVER }}/public/aks VERSION="v0.1.9-test-1es-001" make all-manifest
