@@ -1,5 +1,8 @@
 name: Building and pushing mcr
-on: [workflow_dispatch]
+on:
+  push:
+    tags:
+      - "v*"
 
 permissions:
       id-token: write
@@ -37,33 +40,21 @@ jobs:
             -E unused
             -E varcheck
   build:
-    runs-on: ubuntu-latest
+    runs-on:
+      labels: [self-hosted, "1ES.Pool=1es-aks-ip-masq-agent-pool-ubuntu"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - run: |
+      - name: Build
+        run: |
           make build
-        name: Build
-      - name: Get Changelog Entry
-        id: changelog_reader
-        uses: mindsers/changelog-reader-action@v2
-        with:
-          validation_depth: 10
-          path: ./CHANGELOG.md
-      - name: Display output
+      - name: Publish
         run: |
-           echo "Version: ${{ steps.changelog_reader.outputs.version }}"
-           echo "Changes: ${{ steps.changelog_reader.outputs.changes }}"
-      - name: 'Az CLI login'
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: 'Run Azure CLI commands'
-        run: |
-          az acr login -n ${{ secrets.AZURE_REGISTRY_SERVER }}
-          REGISTRY=${{ secrets.AZURE_REGISTRY_SERVER }}/public/aks VERSION=v${{ steps.changelog_reader.outputs.version }} make all-manifest
-          echo "ACR push done"
+          echo "Logging in with Azure CLI"
+          az login --identity
 
-      
+          echo "Logging into ACR"
+          az acr login -n ${{ secrets.AZURE_REGISTRY_SERVER }}
+
+          echo "Pushing to ACR"
+          REGISTRY=${{ secrets.AZURE_REGISTRY_SERVER }}/public/aks VERSION="${{ github.ref_name }}" make all-manifest
