@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.10]
+
+* Use base image registry.k8s.io/build-image/distroless-iptables:v0.4.5
+
 ## [0.1.9]
 
 * Use base image registry.k8s.io/build-image/distroless-iptables:v0.4.2
