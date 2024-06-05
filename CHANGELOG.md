@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.1.11]
+
+* Use base image registry.k8s.io/build-image/distroless-iptables:v0.4.8
+* Bump golang.org/x/net from 0.17.0 to 0.23.0
+* Bump k8s.io/kubernetes to v1.27.13
+
 ## [0.1.10]
 
 * Use base image registry.k8s.io/build-image/distroless-iptables:v0.4.5
