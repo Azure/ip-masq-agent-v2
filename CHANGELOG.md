@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.12]
+
+* Bump Go version to 1.22
+
 ## [0.1.11]
 
 * Use base image registry.k8s.io/build-image/distroless-iptables:v0.4.8

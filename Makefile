@@ -60,7 +60,7 @@ BASE_IMAGE ?= registry.k8s.io/build-image/distroless-iptables:v0.4.8
 
 TAG := $(VERSION)__$(OS)_$(ARCH)
 
-BUILD_IMAGE ?= golang:1.20-alpine
+BUILD_IMAGE ?= golang:1.22-alpine
 
 # It's necessary to set this because some environments don't link sh -> bash.
 SHELL := /usr/bin/env bash
