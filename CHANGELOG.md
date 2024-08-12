@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.1.13]
+
+* Use Microsoft image for Go toolchain
+* Bump k8s.io/kubernetes to v1.27.16
+
 ## [0.1.12]
 
 * Bump Go version to 1.22
