@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.1.14]
+
+* Bump distroless-iptables to v0.6.3
+* Bump Go build image to 1.23.2-bookworm
+
 ## [1.1.13]
 
 * Use Microsoft image for Go toolchain
