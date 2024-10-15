@@ -56,11 +56,11 @@ ifeq ($(INTERACTIVE), 1)
 endif
 
 # Use a distroless base image, based on debian-iptables: https://github.com/kubernetes/release/tree/master/images/build/distroless-iptables
-BASE_IMAGE ?= registry.k8s.io/build-image/distroless-iptables:v0.4.8
+BASE_IMAGE ?= registry.k8s.io/build-image/distroless-iptables:v0.6.3
 
 TAG := $(VERSION)__$(OS)_$(ARCH)
 
-BUILD_IMAGE ?= mcr.microsoft.com/oss/go/microsoft/golang:1.22.5-bookworm
+BUILD_IMAGE ?= mcr.microsoft.com/oss/go/microsoft/golang:1.23.2-bookworm
 
 # It's necessary to set this because some environments don't link sh -> bash.
 SHELL := /usr/bin/env bash
