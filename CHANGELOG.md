@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.1.15]
+
+* Bump k8s.io/apimachinery to v0.31.3
+* Bump k8s.io/component-base to v0.31.3
+* Bump k8s.io/klog/v2 to v2.130.1
+* Bump k8s.io/kubernetes to v1.31.3
+* Bump k8s.io/utils to v0.0.0-20240921022957-49e7df575cb6
+* Bump golang.org/x/net to v0.33.0
+
 ## [1.1.14]
 
 * Bump distroless-iptables to v0.6.3
