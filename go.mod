@@ -5,7 +5,7 @@ require (
 	k8s.io/apimachinery v0.31.3
 	k8s.io/component-base v0.31.3
 	k8s.io/klog/v2 v2.130.1
-	k8s.io/kubernetes v1.31.3
+	k8s.io/kubernetes v1.31.6
 	k8s.io/utils v0.0.0-20240921022957-49e7df575cb6
 )
 
