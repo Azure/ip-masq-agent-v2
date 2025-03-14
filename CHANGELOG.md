@@ -1,5 +1,9 @@
 # Change Log
+## [1.1.16]
 
+* Bump golang.org/x/net to v0.36.0
+* Bump k8s.io/kubernetes to v1.31.6
+ 
 ## [1.1.15]
 
 * Bump k8s.io/apimachinery to v0.31.3
