@@ -1,8 +1,8 @@
 module github.com/Azure/ip-masq-agent-v2
 
-go 1.23.0
+go 1.24.0
 
-toolchain go1.23.2
+toolchain go1.24.6
 
 require (
 	k8s.io/apimachinery v0.31.12
