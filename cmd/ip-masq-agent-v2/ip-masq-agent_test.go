@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -329,7 +330,7 @@ nonMasqueradeCIDRs:
 		  "masqLinkLocalIPv6": false
 		}
 		`},
-	}}, fmt.Errorf("failed to read config file \"ip-masq-config-0\", error: open " + filepath.Join(configPath, configFilePrefix+"-config-0") + ": errno 2"), NewMasqConfigNoReservedRanges()},
+	}}, errors.New("failed to read config file \"ip-masq-config-0\", error: open " + filepath.Join(configPath, configFilePrefix+"-config-0") + ": errno 2"), NewMasqConfigNoReservedRanges()},
 
 	{"single invalid yaml file, empty entry",
 		fakefs.StringFS{Files: []fakefs.File{{

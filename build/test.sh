@@ -14,11 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
+set -eu
 
-export CGO_ENABLED=0
 export GO111MODULE=on
 export GOFLAGS="${GOFLAGS:-} -mod=${MOD}"
 
