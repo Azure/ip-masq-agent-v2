@@ -31,7 +31,6 @@ import (
 	"k8s.io/component-base/version/verflag"
 	"k8s.io/klog/v2"
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
-	utilexec "k8s.io/utils/exec"
 
 	"github.com/Azure/ip-masq-agent-v2/cmd/ip-masq-agent-v2/testing/fakefs"
 )
@@ -126,9 +125,8 @@ func NewMasqDaemon(c *MasqConfig) *MasqDaemon {
 	// No longer using dbus package, see:
 	// https://github.com/kubernetes/kubernetes/pull/81517
 
-	execer := utilexec.New()
-	iptables := utiliptables.New(execer, utiliptables.ProtocolIPv4)
-	ip6tables := utiliptables.New(execer, utiliptables.ProtocolIPv6)
+	iptables := utiliptables.New(utiliptables.ProtocolIPv4)
+	ip6tables := utiliptables.New(utiliptables.ProtocolIPv6)
 	return &MasqDaemon{
 		config:    c,
 		iptables:  iptables,
