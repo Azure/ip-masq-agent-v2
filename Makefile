@@ -60,7 +60,10 @@ BASE_IMAGE ?= registry.k8s.io/build-image/distroless-iptables:v0.6.3
 
 TAG := $(VERSION)__$(OS)_$(ARCH)
 
-BUILD_IMAGE ?= mcr.microsoft.com/oss/go/microsoft/golang:1.24.12-bookworm
+BUILD_IMAGE ?= mcr.microsoft.com/oss/go/microsoft/golang:1.25.6-bookworm
+
+# Enable CGO for Microsoft Go system crypto backend
+CGO_ENABLED ?= 1
 
 # It's necessary to set this because some environments don't link sh -> bash.
 SHELL := /usr/bin/env bash
@@ -168,6 +171,7 @@ go-build: | $(BUILD_DIRS)
 	    -v $$(pwd)/.go/pkg:/go/pkg                              \
 	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    --env CGO_ENABLED=$(CGO_ENABLED)                        \
 	    $(BUILD_IMAGE)                                          \
 	    /bin/sh -c "                                            \
 	        ARCH=$(ARCH)                                        \
@@ -268,6 +272,7 @@ test: | $(BUILD_DIRS)
 	    -v $$(pwd)/.go/pkg:/go/pkg                              \
 	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    --env CGO_ENABLED=$(CGO_ENABLED)                        \
 	    $(BUILD_IMAGE)                                          \
 	    /bin/sh -c "                                            \
 	        ARCH=$(ARCH)                                        \

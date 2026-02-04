@@ -30,7 +30,8 @@ if [ -z "${VERSION:-}" ]; then
     exit 1
 fi
 
-export CGO_ENABLED=0
+# Respect CGO setting from environment; default to enabled for Microsoft Go
+export CGO_ENABLED="${CGO_ENABLED:-1}"
 export GOARCH="${ARCH}"
 export GOOS="${OS}"
 export GO111MODULE=on
